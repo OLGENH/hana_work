@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="ORDER_STATUS" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="ORDER_STATUS"/>
+  <metadata changedAt="2020-05-07 17:34:21.074"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="VARBINARY" id="GUID" length="16"/>
+        <viewAttribute datatype="VARCHAR" id="TRANSACTION_TYPE" length="4"/>
+        <viewAttribute datatype="NVARCHAR" id="PROCESS_TP" length="30"/>
+        <viewAttribute datatype="NVARCHAR" id="STAT" length="5"/>
+        <viewAttribute datatype="NVARCHAR" id="STAT_DESC" length="40"/>
+        <viewAttribute datatype="NVARCHAR" id="USER_NAME" length="10"/>
+        <viewAttribute datatype="DATE" id="DATE_CHANGED"/>
+        <viewAttribute datatype="TIME" id="TIME_CHANGED"/>
+        <viewAttribute datatype="INTEGER" id="NUMBER_OF_TRANSACTIONS"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> 
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+ 
+ 	--jcds = select objnr, max( usnam ) as usnam, max( stat ) as stat, max( udate ) as udate, max( utime ) as utime from &quot;SAPHANADB&quot;.&quot;CRM_JCDS&quot;
+ 	--	where stat like 'E%' and inact != 'X'
+ 	--	group by objnr;
+	jcds = select jcds.objnr, jcds.usnam, jcds.stat, jcds.udate, jcds.utime from &quot;SAPHANADB&quot;.&quot;CRM_JCDS&quot; as jcds
+			inner join (
+				select objnr,max( concat(udate,utime) ) as datetime from &quot;SAPHANADB&quot;.&quot;CRM_JCDS&quot;
+					where stat like 'E%' and inact != 'X'
+					group by objnr 
+			) as jcds_recent on jcds_recent.objnr = jcds.objnr and jcds_recent.datetime = concat(jcds.udate,jcds.utime)
+			where jcds.stat like 'E%' and inact != 'X';
+ 
+ 	status = select h.guid as guid,
+ 					h.process_type as transaction_type,
+ 					proc_type.p_description as process_tp,
+ 					:jcds.stat as stat,
+ 					stat_text.txt30 as stat_desc,
+ 					:jcds.usnam as user_name,
+ 					max( :jcds.udate ) as date_changed,
+ 					max( :jcds.utime ) as time_changed
+ 					from &quot;SAPHANADB&quot;.&quot;CRMD_ORDERADM_H&quot; as h
+ 					inner join &quot;SAPHANADB&quot;.&quot;CRM_JEST&quot; as jest on h.guid = jest.objnr
+					inner join :jcds on jest.stat = :jcds.stat and jest.objnr = :jcds.objnr
+ 					inner join &quot;SAPHANADB&quot;.&quot;CRM_JSTO&quot; as jsto on jsto.objnr = jest.objnr
+ 					inner join &quot;SAPHANADB&quot;.&quot;TJ30T&quot; as stat_text on stat_text.stsma = jsto.stsma and jest.stat = stat_text.estat and stat_text.spras = 'E'
+ 					inner join &quot;SAPHANADB&quot;.&quot;CRMC_PROC_TYPE_T&quot; as proc_type on proc_type.process_type = h.process_Type and proc_type.langu = 'E'
+ 					where jest.inact != 'X'
+ 					group by h.guid,  h.process_type, proc_type.p_description, :jcds.stat, stat_text.txt30, :jcds.usnam;
+ 	
+ 	 var_out = select guid, transaction_type, process_tp, stat, stat_desc, user_name, date_changed, time_changed, count(guid) as number_of_transactions
+ 	 				from :status
+ 	 				group by guid, transaction_type, process_tp, stat, stat_desc, user_name, date_changed, time_changed;
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="GUID" order="1">
+        <descriptions defaultDescription="GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="GUID"/>
+      </attribute>
+      <attribute id="TRANSACTION_TYPE" hidden="true" order="2">
+        <descriptions defaultDescription="PROCESS_TYPE"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRANSACTION_TYPE"/>
+      </attribute>
+      <attribute id="PROCESS_TP" order="3">
+        <descriptions defaultDescription="DESCRIPTION"/>
+        <keyMapping columnObjectName="Script_View" columnName="PROCESS_TP"/>
+      </attribute>
+      <attribute id="STAT" order="4">
+        <descriptions defaultDescription="STAT"/>
+        <keyMapping columnObjectName="Script_View" columnName="STAT"/>
+      </attribute>
+      <attribute id="STAT_DESC" order="5">
+        <descriptions defaultDescription="STAT_DESC"/>
+        <keyMapping columnObjectName="Script_View" columnName="STAT_DESC"/>
+      </attribute>
+      <attribute id="USER_NAME" order="6">
+        <descriptions defaultDescription="USER_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="USER_NAME"/>
+      </attribute>
+      <attribute id="DATE_CHANGED" order="7">
+        <descriptions defaultDescription="DATE_CHANGED"/>
+        <keyMapping columnObjectName="Script_View" columnName="DATE_CHANGED"/>
+      </attribute>
+      <attribute id="TIME_CHANGED" order="8">
+        <descriptions defaultDescription="TIME_CHANGED"/>
+        <keyMapping columnObjectName="Script_View" columnName="TIME_CHANGED"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="NUMBER_OF_TRANSACTIONS" order="9" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="NUMBER_OF_TRANSACTIONS"/>
+        <measureMapping columnObjectName="Script_View" columnName="NUMBER_OF_TRANSACTIONS"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>
