@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="AHT_CHECKLIST_ITEM_AVERAGES" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="TREE_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" outputViewType="Aggregation">
+  <origin/>
+  <descriptions defaultDescription="AHT_CHECKLIST_ITEM_AVERAGES"/>
+  <metadata changedAt="2020-05-15 15:51:13.116"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources>
+    <DataSource id="AHT_CHECKLIST_ITEMS" type="CALCULATION_VIEW">
+      <viewAttributes allViewAttributes="true"/>
+      <resourceUri>/public.dd_reporting.aht/calculationviews/AHT_CHECKLIST_ITEMS</resourceUri>
+    </DataSource>
+    <DataSource id="AHT_CASES" type="CALCULATION_VIEW">
+      <viewAttributes allViewAttributes="true"/>
+      <resourceUri>/public.dd_reporting.aht/calculationviews/AHT_CASES</resourceUri>
+    </DataSource>
+  </dataSources>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:JoinView" id="header_to_items" joinOrder="OUTSIDE_IN">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="ITEM_GUID"/>
+        <viewAttribute id="HEADER"/>
+        <viewAttribute id="STEP_DESCRIPTION"/>
+        <viewAttribute id="STEP_KPI"/>
+        <viewAttribute id="SECONDS_STEP_KPI_BREACHED_BY"/>
+        <viewAttribute id="MINUTES_STEP_KPI_BREACHED_BY"/>
+        <viewAttribute id="HOURS_STEP_KPI_BREACHED_BY"/>
+        <viewAttribute id="STEP_KPI_BREACHED"/>
+        <viewAttribute id="STEP_CREATED_BY"/>
+        <viewAttribute id="STEP_CREATED_DATE"/>
+        <viewAttribute id="STEP_CREATED_TS"/>
+        <viewAttribute id="STEP_COMPLETED_BY"/>
+        <viewAttribute id="STEP_COMPLETED_DATE"/>
+        <viewAttribute id="STEP_COMPLETED_TS"/>
+        <viewAttribute id="DAYS_TO_COMPLETE_STEP"/>
+        <viewAttribute id="SECONDS_TO_COMPLETE_STEP"/>
+        <viewAttribute id="MINUTES_TO_COMPLETE_STEP"/>
+        <viewAttribute id="HOURS_TO_COMPLETE_STEP"/>
+        <viewAttribute id="TIME_TO_COMPLETE_STEP"/>
+        <viewAttribute id="STEP_STATUS"/>
+        <viewAttribute id="COUNTER"/>
+        <viewAttribute id="CASE_GUID"/>
+        <viewAttribute id="CASE_ID"/>
+        <viewAttribute id="PROCESS_TYPE"/>
+        <viewAttribute id="PREVIOUS_DOCUMENT"/>
+        <viewAttribute id="NEXT_DOCUMENT"/>
+        <viewAttribute id="CASE_CREATED_DATE"/>
+        <viewAttribute id="CASE_CREATED_TS"/>
+        <viewAttribute id="CASE_COMPLETED_DATE"/>
+        <viewAttribute id="CASE_COMPLETED_TS"/>
+        <viewAttribute id="CASE_DISPATCHED_TS"/>
+        <viewAttribute id="CASE_DUE_TS"/>
+        <viewAttribute id="SECONDS_CASE_SLA_BREACHED_BY"/>
+        <viewAttribute id="MINUTES_CASE_SLA_BREACHED_BY"/>
+        <viewAttribute id="HOURS_CASE_SLA_BREACHED_BY"/>
+        <viewAttribute id="CASE_BREACHED"/>
+        <viewAttribute id="SECONDS_TO_COMPLETE_CASE"/>
+        <viewAttribute id="MINUTES_TO_COMPLETE_CASE"/>
+        <viewAttribute id="HOURS_TO_COMPLETE_CASE"/>
+        <viewAttribute id="CASE_STATUS"/>
+        <viewAttribute id="CASE_CREATED_BY"/>
+        <viewAttribute id="CASE_EMPLOYEE_RESP_ID"/>
+        <viewAttribute id="CASE_EMPLOYEE_RESP_NAME"/>
+        <viewAttribute id="CASE_ORG_RESP_NAME"/>
+        <viewAttribute id="CAT_LVL_1"/>
+        <viewAttribute id="CAT_LVL_2"/>
+        <viewAttribute id="CAT_LVL_3"/>
+        <viewAttribute id="PARTNER"/>
+        <viewAttribute id="CLASSIFICATION"/>
+        <viewAttribute id="CUSTOMER_NAME"/>
+        <viewAttribute id="STATE"/>
+        <viewAttribute id="DISTRIBUTION_CHANNEL"/>
+        <viewAttribute id="ROUTE"/>
+        <viewAttribute id="COUNTER_1"/>
+        <viewAttribute id="TIME_KPI_BREACHED_BY"/>
+        <viewAttribute id="OUTCOME"/>
+        <viewAttribute id="OUTCOME_REASON"/>
+        <viewAttribute id="ACTION_DESC"/>
+        <viewAttribute id="STEP_ASSIGNED_TO_TEAM"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input node="#AHT_CHECKLIST_ITEMS">
+        <mapping xsi:type="Calculation:AttributeMapping" target="ITEM_GUID" source="ITEM_GUID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="HEADER" source="HEADER"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_DESCRIPTION" source="STEP_DESCRIPTION"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_KPI" source="STEP_KPI"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="SECONDS_STEP_KPI_BREACHED_BY" source="SECONDS_STEP_KPI_BREACHED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MINUTES_STEP_KPI_BREACHED_BY" source="MINUTES_STEP_KPI_BREACHED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="HOURS_STEP_KPI_BREACHED_BY" source="HOURS_STEP_KPI_BREACHED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_KPI_BREACHED" source="STEP_KPI_BREACHED"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_CREATED_BY" source="STEP_CREATED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_CREATED_DATE" source="STEP_CREATED_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_CREATED_TS" source="STEP_CREATED_TS"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_COMPLETED_BY" source="STEP_COMPLETED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_COMPLETED_DATE" source="STEP_COMPLETED_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_COMPLETED_TS" source="STEP_COMPLETED_TS"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="DAYS_TO_COMPLETE_STEP" source="DAYS_TO_COMPLETE_STEP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="SECONDS_TO_COMPLETE_STEP" source="SECONDS_TO_COMPLETE_STEP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MINUTES_TO_COMPLETE_STEP" source="MINUTES_TO_COMPLETE_STEP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="HOURS_TO_COMPLETE_STEP" source="HOURS_TO_COMPLETE_STEP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="TIME_TO_COMPLETE_STEP" source="TIME_TO_COMPLETE_STEP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_STATUS" source="STEP_STATUS"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COUNTER" source="COUNTER"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="TIME_KPI_BREACHED_BY" source="TIME_KPI_BREACHED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STEP_ASSIGNED_TO_TEAM" source="STEP_ASSIGNED_TO_TEAM"/>
+      </input>
+      <input node="#AHT_CASES">
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_GUID" source="CASE_GUID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_ID" source="CASE_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="PROCESS_TYPE" source="PROCESS_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="PREVIOUS_DOCUMENT" source="PREVIOUS_DOCUMENT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEXT_DOCUMENT" source="NEXT_DOCUMENT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_CREATED_DATE" source="CASE_CREATED_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_CREATED_TS" source="CASE_CREATED_TS"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_COMPLETED_DATE" source="CASE_COMPLETED_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_COMPLETED_TS" source="CASE_COMPLETED_TS"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_DISPATCHED_TS" source="CASE_DISPATCHED_TS"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_DUE_TS" source="CASE_DUE_TS"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="SECONDS_CASE_SLA_BREACHED_BY" source="SECONDS_CASE_SLA_BREACHED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MINUTES_CASE_SLA_BREACHED_BY" source="MINUTES_CASE_SLA_BREACHED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="HOURS_CASE_SLA_BREACHED_BY" source="HOURS_CASE_SLA_BREACHED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_BREACHED" source="CASE_BREACHED"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="SECONDS_TO_COMPLETE_CASE" source="SECONDS_TO_COMPLETE_CASE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MINUTES_TO_COMPLETE_CASE" source="MINUTES_TO_COMPLETE_CASE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="HOURS_TO_COMPLETE_CASE" source="HOURS_TO_COMPLETE_CASE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_STATUS" source="CASE_STATUS"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_CREATED_BY" source="CASE_CREATED_BY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_EMPLOYEE_RESP_ID" source="CASE_EMPLOYEE_RESP_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_EMPLOYEE_RESP_NAME" source="CASE_EMPLOYEE_RESP_NAME"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CASE_ORG_RESP_NAME" source="CASE_ORG_RESP_NAME"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CAT_LVL_1" source="CAT_LVL_1"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CAT_LVL_2" source="CAT_LVL_2"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CAT_LVL_3" source="CAT_LVL_3"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="PARTNER" source="PARTNER"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CLASSIFICATION" source="CLASSIFICATION"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CUSTOMER_NAME" source="CUSTOMER_NAME"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STATE" source="STATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="DISTRIBUTION_CHANNEL" source="DISTRIBUTION_CHANNEL"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="ROUTE" source="ROUTE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COUNTER_1" source="COUNTER"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="OUTCOME" source="OUTCOME"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="OUTCOME_REASON" source="OUTCOME_REASON"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="ACTION_DESC" source="ACTION_DESC"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="HEADER" source="CASE_GUID"/>
+      </input>
+      <joinAttribute name="HEADER"/>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="header_to_items">
+    <descriptions/>
+    <attributes>
+      <attribute id="STEP_DESCRIPTION" order="1" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Description"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_DESCRIPTION"/>
+      </attribute>
+      <attribute id="STEP_ASSIGNED_TO_TEAM" order="2" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Assigned to Team"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_ASSIGNED_TO_TEAM"/>
+      </attribute>
+      <attribute id="STEP_CREATED_BY" order="3" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Created By"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_CREATED_BY"/>
+      </attribute>
+      <attribute id="STEP_CREATED_DATE" order="4" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Created Date"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_CREATED_DATE"/>
+      </attribute>
+      <attribute id="STEP_COMPLETED_DATE" order="5" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Completed Date"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_COMPLETED_DATE"/>
+      </attribute>
+      <attribute id="STEP_CREATED_TS" order="6" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Created Timestamp"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_CREATED_TS"/>
+      </attribute>
+      <attribute id="STEP_COMPLETED_BY" order="7" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Completed By"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_COMPLETED_BY"/>
+      </attribute>
+      <attribute id="STEP_COMPLETED_TS" order="8" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Completed Timestamp"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_COMPLETED_TS"/>
+      </attribute>
+      <attribute id="STEP_STATUS" order="9" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Status"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_STATUS"/>
+      </attribute>
+      <attribute id="STEP_KPI_BREACHED" order="10" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Step Breached KPI?"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STEP_KPI_BREACHED"/>
+      </attribute>
+      <attribute id="CASE_ID" order="11" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case ID"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_ID"/>
+      </attribute>
+      <attribute id="PROCESS_TYPE" order="12" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Process Type"/>
+        <keyMapping columnObjectName="header_to_items" columnName="PROCESS_TYPE"/>
+      </attribute>
+      <attribute id="PREVIOUS_DOCUMENT" order="13" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Previous Document"/>
+        <keyMapping columnObjectName="header_to_items" columnName="PREVIOUS_DOCUMENT"/>
+      </attribute>
+      <attribute id="NEXT_DOCUMENT" order="14" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Next Document"/>
+        <keyMapping columnObjectName="header_to_items" columnName="NEXT_DOCUMENT"/>
+      </attribute>
+      <attribute id="CASE_CREATED_TS" order="15" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Created Timestamp"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_CREATED_TS"/>
+      </attribute>
+      <attribute id="CASE_COMPLETED_TS" order="16" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Completed Timestamp"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_COMPLETED_TS"/>
+      </attribute>
+      <attribute id="CASE_DISPATCHED_TS" order="17" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Dispatched Timestamp"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_DISPATCHED_TS"/>
+      </attribute>
+      <attribute id="CASE_DUE_TS" order="18" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case SLA timestamp"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_DUE_TS"/>
+      </attribute>
+      <attribute id="CASE_BREACHED" order="19" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case SLA Breached?"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_BREACHED"/>
+      </attribute>
+      <attribute id="CASE_STATUS" order="20" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Status"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_STATUS"/>
+      </attribute>
+      <attribute id="CASE_CREATED_BY" order="21" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Created By"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_CREATED_BY"/>
+      </attribute>
+      <attribute id="CASE_EMPLOYEE_RESP_NAME" order="22" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Employee Responsible Name"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_EMPLOYEE_RESP_NAME"/>
+      </attribute>
+      <attribute id="CASE_ORG_RESP_NAME" order="23" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Team Responsible Name"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_ORG_RESP_NAME"/>
+      </attribute>
+      <attribute id="CAT_LVL_1" order="24" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Category Level 1"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CAT_LVL_1"/>
+      </attribute>
+      <attribute id="CAT_LVL_2" order="25" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Category Level 2"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CAT_LVL_2"/>
+      </attribute>
+      <attribute id="CAT_LVL_3" order="26" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Action (Cat 3)"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CAT_LVL_3"/>
+      </attribute>
+      <attribute id="OUTCOME" order="27" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Outcome"/>
+        <keyMapping columnObjectName="header_to_items" columnName="OUTCOME"/>
+      </attribute>
+      <attribute id="OUTCOME_REASON" order="28" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Outcome Reason"/>
+        <keyMapping columnObjectName="header_to_items" columnName="OUTCOME_REASON"/>
+      </attribute>
+      <attribute id="ACTION_DESC" order="29" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Action Description"/>
+        <keyMapping columnObjectName="header_to_items" columnName="ACTION_DESC"/>
+      </attribute>
+      <attribute id="CLASSIFICATION" order="30" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Classification"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CLASSIFICATION"/>
+      </attribute>
+      <attribute id="CUSTOMER_NAME" order="31" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Customer Name"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CUSTOMER_NAME"/>
+      </attribute>
+      <attribute id="STATE" order="32" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="State"/>
+        <keyMapping columnObjectName="header_to_items" columnName="STATE"/>
+      </attribute>
+      <attribute id="DISTRIBUTION_CHANNEL" order="33" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Distribution Channel"/>
+        <keyMapping columnObjectName="header_to_items" columnName="DISTRIBUTION_CHANNEL"/>
+      </attribute>
+      <attribute id="ROUTE" order="34" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Route"/>
+        <keyMapping columnObjectName="header_to_items" columnName="ROUTE"/>
+      </attribute>
+      <attribute id="CASE_CREATED_DATE" order="49" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Created Date"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_CREATED_DATE"/>
+      </attribute>
+      <attribute id="CASE_COMPLETED_DATE" order="50" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Completed Date"/>
+        <keyMapping columnObjectName="header_to_items" columnName="CASE_COMPLETED_DATE"/>
+      </attribute>
+      <attribute id="TIME_TO_COMPLETE_STEP" order="51" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Time to Complete Step (dd:hh:mm)"/>
+        <keyMapping columnObjectName="header_to_items" columnName="TIME_TO_COMPLETE_STEP"/>
+      </attribute>
+      <attribute id="TIME_KPI_BREACHED_BY" order="52" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Time Step KPI Breached  (dd:hh:mm)"/>
+        <keyMapping columnObjectName="header_to_items" columnName="TIME_KPI_BREACHED_BY"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="COUNTER" order="35" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="Count"/>
+        <measureMapping columnObjectName="header_to_items" columnName="COUNTER"/>
+      </measure>
+      <measure id="SECONDS_STEP_KPI_BREACHED_BY" order="36" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Step KPI Breach (seconds)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="SECONDS_STEP_KPI_BREACHED_BY"/>
+      </measure>
+      <measure id="MINUTES_STEP_KPI_BREACHED_BY" order="37" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Step KPI Breach (minutes)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="MINUTES_STEP_KPI_BREACHED_BY"/>
+      </measure>
+      <measure id="HOURS_STEP_KPI_BREACHED_BY" order="38" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Step KPI Breach (hours)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="HOURS_STEP_KPI_BREACHED_BY"/>
+      </measure>
+      <measure id="DAYS_TO_COMPLETE_STEP" order="39" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Step Completion Time (days)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="DAYS_TO_COMPLETE_STEP"/>
+      </measure>
+      <measure id="SECONDS_TO_COMPLETE_STEP" order="40" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Step Completion Time (seconds))"/>
+        <measureMapping columnObjectName="header_to_items" columnName="SECONDS_TO_COMPLETE_STEP"/>
+      </measure>
+      <measure id="MINUTES_TO_COMPLETE_STEP" order="41" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Step Completion Time (minutes)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="MINUTES_TO_COMPLETE_STEP"/>
+      </measure>
+      <measure id="HOURS_TO_COMPLETE_STEP" order="42" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Step Completion Time (hours)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="HOURS_TO_COMPLETE_STEP"/>
+      </measure>
+      <measure id="SECONDS_CASE_SLA_BREACHED_BY" order="43" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Case SLA Breached By (seconds)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="SECONDS_CASE_SLA_BREACHED_BY"/>
+      </measure>
+      <measure id="MINUTES_CASE_SLA_BREACHED_BY" order="44" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Case SLA Breached By (minutes)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="MINUTES_CASE_SLA_BREACHED_BY"/>
+      </measure>
+      <measure id="HOURS_CASE_SLA_BREACHED_BY" order="45" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Case SLA Breached By (hours)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="HOURS_CASE_SLA_BREACHED_BY"/>
+      </measure>
+      <measure id="SECONDS_TO_COMPLETE_CASE" order="46" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Case Completion (seconds)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="SECONDS_TO_COMPLETE_CASE"/>
+      </measure>
+      <measure id="MINUTES_TO_COMPLETE_CASE" order="47" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Case Completion (minutes)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="MINUTES_TO_COMPLETE_CASE"/>
+      </measure>
+      <measure id="HOURS_TO_COMPLETE_CASE" order="48" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Case Completion (hours)"/>
+        <measureMapping columnObjectName="header_to_items" columnName="HOURS_TO_COMPLETE_CASE"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="22" y="87"/>
+        <rectangleSize height="0" width="0"/>
+      </shape>
+      <shape expanded="true" modelObjectName="header_to_items" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="22" y="165"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>
