@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" xmlns:Dimension="http://www.sap.com/ndb/BiModelDimension.ecore" schemaVersion="2.3" id="EMAIL_TEST" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" calculationScenarioType="TREE_BASED" dataCategory="DIMENSION" dimensionType="TIME" enforceSqlExecution="false" executionSemantic="UNDEFINED" outputViewType="Projection">
+  <origin/>
+  <descriptions defaultDescription="EMAIL_TEST"/>
+  <metadata changedAt="2020-03-26 14:17:54.193"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources>
+    <DataSource id="M_TIME_DIMENSION_WEEK" type="DATA_BASE_TABLE">
+      <viewAttributes allViewAttributes="true"/>
+      <columnObject schemaName="_SYS_BI" columnObjectName="M_TIME_DIMENSION_WEEK"/>
+    </DataSource>
+  </dataSources>
+  <calculationViews/>
+  <inlineHierarchy xsi:type="Dimension:LeveledHierarchy" id="Gregorian_Hierarchy" nodeStyle="NAME_PATH">
+    <descriptions defaultDescription="Gregorian_Hierarchy"/>
+    <levels>
+      <level levelAttribute="#YEAR" levelType="MDLEVEL_TYPE_TIME_YEARS" order="1"/>
+      <level levelAttribute="#HALFYEAR" levelType="MDLEVEL_TYPE_TIME_HALF_YEAR" order="2"/>
+      <level levelAttribute="#QUARTER" levelType="MDLEVEL_TYPE_TIME_QUARTERS" order="3"/>
+      <level levelAttribute="#MONTH" levelType="MDLEVEL_TYPE_TIME_MONTHS" order="4"/>
+      <level levelAttribute="#WEEK" levelType="MDLEVEL_TYPE_TIME_WEEKS" order="5"/>
+    </levels>
+  </inlineHierarchy>
+  <logicalModel id="M_TIME_DIMENSION_WEEK">
+    <descriptions/>
+    <attributes>
+      <attribute id="YEAR" order="1" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="YEAR"/>
+        <keyMapping schemaName="_SYS_BI" columnObjectName="M_TIME_DIMENSION_WEEK" columnName="YEAR"/>
+      </attribute>
+      <attribute id="HALFYEAR" order="2" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="HALFYEAR"/>
+        <keyMapping schemaName="_SYS_BI" columnObjectName="M_TIME_DIMENSION_WEEK" columnName="HALFYEAR"/>
+      </attribute>
+      <attribute id="QUARTER" order="3" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="QUARTER"/>
+        <keyMapping schemaName="_SYS_BI" columnObjectName="M_TIME_DIMENSION_WEEK" columnName="QUARTER"/>
+      </attribute>
+      <attribute id="MONTH" order="4" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="MONTH"/>
+        <keyMapping schemaName="_SYS_BI" columnObjectName="M_TIME_DIMENSION_WEEK" columnName="MONTH"/>
+      </attribute>
+      <attribute id="WEEK" order="5" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="WEEK"/>
+        <keyMapping schemaName="_SYS_BI" columnObjectName="M_TIME_DIMENSION_WEEK" columnName="WEEK"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures/>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+        <rectangleSize/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="AHT_CHECKLIST_ITEMS" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="CV_AHT_TEST"/>
+  <metadata changedAt="2020-05-19 10:35:36.202"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="VARBINARY" id="ITEM_GUID" length="16"/>
+        <viewAttribute datatype="VARBINARY" id="HEADER" length="16"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_DESCRIPTION" length="100"/>
+        <viewAttribute datatype="INTEGER" id="STEP_KPI"/>
+        <viewAttribute datatype="INTEGER" id="SECONDS_STEP_KPI_BREACHED_BY"/>
+        <viewAttribute datatype="DECIMAL" id="MINUTES_STEP_KPI_BREACHED_BY" length="20" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="HOURS_STEP_KPI_BREACHED_BY" length="20" scale="2"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_KPI_BREACHED" length="3"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_CREATED_BY" length="10"/>
+        <viewAttribute datatype="DATE" id="STEP_CREATED_DATE"/>
+        <viewAttribute datatype="TIMESTAMP" id="STEP_CREATED_TS"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_COMPLETED_BY" length="20"/>
+        <viewAttribute datatype="DATE" id="STEP_COMPLETED_DATE"/>
+        <viewAttribute datatype="TIMESTAMP" id="STEP_COMPLETED_TS"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_ASSIGNED_TO_TEAM" length="40"/>
+        <viewAttribute datatype="INTEGER" id="DAYS_TO_COMPLETE_STEP"/>
+        <viewAttribute datatype="INTEGER" id="SECONDS_TO_COMPLETE_STEP"/>
+        <viewAttribute datatype="DECIMAL" id="MINUTES_TO_COMPLETE_STEP" length="20" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="HOURS_TO_COMPLETE_STEP" length="20" scale="2"/>
+        <viewAttribute datatype="VARCHAR" id="TIME_TO_COMPLETE_STEP" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="TIME_KPI_BREACHED_BY" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_STATUS" length="30"/>
+        <viewAttribute datatype="INTEGER" id="COUNTER"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>/********* Begin Procedure Script ************/ 
+ BEGIN 
+ 
+ /*
+	TABLES USED:
+	&quot;SAPHANADB&quot;.crm_jcds - created at/created by
+	&quot;SAPHANADB&quot;.tj30t - status descriptions 
+	&quot;_SYS_BIC&quot;.&quot;public.dd_reporting.aht/CHECKLIST_ITEMS&quot; - checklist specific details, KPA times etc
+	&quot;_SYS_BIC&quot;.&quot;public.dd_reporting.aht/FILTERED_STATUS_HISTORY&quot;  - completed date/time/user
+	
+	This view retrieves checklist item data + calculated KPIs
+	
+	UPDATE LOG:
+    15/5/20 | BRETMITC | initial build
+ */
+ 
+	data = select	 	 
+ 	  created.objnr as item_guid,	
+ 	  checklist.case_guid as header,
+ 	  checklist.step_description as step_description,
+ 	  checklist.step_sla_duration as step_kpi, 	 
+ 	
+ 	  case 
+ 	    when ( seconds_between(to_timestamp(concat(created.udate, created.utime )),to_timestamp(concat(completed.udate, completed.utime))) - checklist.step_sla_duration ) &lt; 0 then 0
+ 	    else 
+	    seconds_between(to_timestamp(concat(created.udate, created.utime )),to_timestamp(concat(completed.udate, completed.utime))) - checklist.step_sla_duration 
+	  end as seconds_step_kpi_breached_by,
+	
+	  created.usnam as step_created_by,
+	  created.udate as step_created_date,
+	  to_timestamp(concat(created.udate, created.utime)) as step_created_ts,
+	  completed.usnam as step_completed_by,
+	  completed.udate as step_completed_date,
+	  to_timestamp(concat(completed.udate, completed.utime)) as step_completed_ts,
+	  bp.name_org2 as step_assigned_to_team,
+	  days_between(created.udate, completed.udate) as days_to_complete_step,
+	
+      seconds_between(to_timestamp(concat(created.udate, created.utime )),to_timestamp(concat(completed.udate, completed.utime))) as seconds_to_complete_step,
+      current_status.stat_desc as step_status,   
+	  count( created.objnr ) as counter
+
+	from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting.aht/CHECKLIST_ITEMS&quot; as checklist
+	inner join &quot;_SYS_BIC&quot;.&quot;public.dd_reporting.aht/ITEM_CURRENT_STATUS&quot; as current_status on current_status.guid = checklist.checklist_guid
+	inner join &quot;SAPHANADB&quot;.crm_jcds as created on created.objnr = checklist.checklist_guid
+	left outer join  &quot;_SYS_BIC&quot;.&quot;public.dd_reporting.aht/FILTERED_STATUS_HISTORY&quot; ('PLACEHOLDER' = ('$$IP_STAT$$', 'E0005')) as completed on completed.objnr = checklist.checklist_guid
+    inner join &quot;SAPHANADB&quot;.crmd_link as partner_link on partner_link.guid_hi = created.objnr and partner_link.objtype_hi = '06' and partner_link.objtype_set = '07'
+    left outer join &quot;SAPHANADB&quot;.crmd_partner as partners on partners.guid = partner_link.guid_set and partner_fct = '00000056'
+    left outer join &quot;SAPHANADB&quot;.but000 as bp on bp.partner_guid = partners.partner_no
+	where created.stat in ('E0015','E0001','E0002')
+	and created.inact &lt;> 'X'
+	and created.chind = 'I'
+	group by 
+	  created.objnr,
+ 	  checklist.step_description,
+ 	  checklist.step_sla_duration,
+ 	  checklist.case_guid,
+	  created.usnam,
+	  created.udate,
+	  created.utime,
+	  completed.usnam,
+	  completed.udate,
+	  completed.utime,
+	  bp.name_org2,
+	  current_status.stat_desc; 
+ 
+ 
+ 
+  	var_out = select	 	 
+ 	  :data.item_guid,	
+ 	  :data.header,
+ 	  :data.step_description,
+ 	  :data.step_kpi,
+      :data.seconds_step_kpi_breached_by,
+	  
+	  case 
+ 	    when :data.seconds_step_kpi_breached_by &lt; 0 
+ 	    then 0
+ 	    else :data.seconds_step_kpi_breached_by / 60 
+	  end as minutes_step_kpi_breached_by,
+	
+      case 
+ 	    when :data.seconds_step_kpi_breached_by &lt; 0 
+ 	    then 0
+	    else :data.seconds_step_kpi_breached_by / 60 / 60 
+	  end as hours_step_kpi_breached_by,
+	
+	  case 
+	    when :data.seconds_step_kpi_breached_by  > 0
+	    then 'Y'
+	    when  :data.seconds_step_kpi_breached_by  >= 0 and :data.step_kpi is not null
+	    then 'N'
+	    else 'N/A' 
+	  end as step_kpi_breached,
+	
+	  :data.step_created_by,
+	  :data.step_created_date,
+	  :data.step_created_ts,
+	  :data.step_completed_by,
+	  :data.step_completed_date,
+	  :data.step_completed_ts,
+	  :data.step_assigned_to_team,
+	  :data.days_to_complete_step,
+      :data.seconds_to_complete_step,
+      :data.seconds_to_complete_step / 60  as minutes_to_complete_step,
+      :data.seconds_to_complete_step / 60 / 60  as hours_to_complete_step,
+      
+      concat(lpad(floor(seconds_to_complete_step/3600/24),2,0),
+	   	concat(
+	   	  concat(
+	   	    concat(':',lpad(floor(mod((seconds_to_complete_step/3600),24)),2,0)),':'
+	   	  ), lpad(mod(mod(mod(seconds_to_complete_step,3600),60),60),2,0)
+		) 	   
+	  ) as time_to_complete_step,
+	  
+	  concat(lpad(floor(seconds_step_kpi_breached_by/3600/24),2,0),
+	   	concat(
+	   	  concat(
+	   	    concat(':',lpad(floor(mod((seconds_step_kpi_breached_by/3600),24)),2,0)),':'
+	   	  ), lpad(mod(mod(mod(seconds_step_kpi_breached_by,3600),60),60),2,0)
+		) 	   
+	  ) as time_kpi_breached_by,
+	  
+	  :data.step_status,
+	  :data.counter
+	  from :data;
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="ITEM_GUID" order="1">
+        <descriptions defaultDescription="Item Guid"/>
+        <keyMapping columnObjectName="Script_View" columnName="ITEM_GUID"/>
+      </attribute>
+      <attribute id="HEADER" order="2">
+        <descriptions defaultDescription="Case Guid"/>
+        <keyMapping columnObjectName="Script_View" columnName="HEADER"/>
+      </attribute>
+      <attribute id="STEP_DESCRIPTION" order="3">
+        <descriptions defaultDescription="Step Description"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_DESCRIPTION"/>
+      </attribute>
+      <attribute id="STEP_KPI" order="4">
+        <descriptions defaultDescription="Step KPI in seconds"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_KPI"/>
+      </attribute>
+      <attribute id="SECONDS_STEP_KPI_BREACHED_BY" order="5">
+        <descriptions defaultDescription="Step actual vs KPI"/>
+        <keyMapping columnObjectName="Script_View" columnName="SECONDS_STEP_KPI_BREACHED_BY"/>
+      </attribute>
+      <attribute id="MINUTES_STEP_KPI_BREACHED_BY" order="6">
+        <descriptions defaultDescription="Minutes Step KPI Breached By"/>
+        <keyMapping columnObjectName="Script_View" columnName="MINUTES_STEP_KPI_BREACHED_BY"/>
+      </attribute>
+      <attribute id="HOURS_STEP_KPI_BREACHED_BY" order="7">
+        <descriptions defaultDescription="Hours Step KPI Breached By"/>
+        <keyMapping columnObjectName="Script_View" columnName="HOURS_STEP_KPI_BREACHED_BY"/>
+      </attribute>
+      <attribute id="STEP_KPI_BREACHED" order="8">
+        <descriptions defaultDescription="Breached Step KPI"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_KPI_BREACHED"/>
+      </attribute>
+      <attribute id="STEP_CREATED_BY" order="9">
+        <descriptions defaultDescription="Step Created By"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_CREATED_BY"/>
+      </attribute>
+      <attribute id="STEP_CREATED_DATE" order="10">
+        <descriptions defaultDescription="Date Step Created"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_CREATED_DATE"/>
+      </attribute>
+      <attribute id="STEP_CREATED_TS" order="11">
+        <descriptions defaultDescription="Timestamp Step Created"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_CREATED_TS"/>
+      </attribute>
+      <attribute id="STEP_COMPLETED_BY" order="12">
+        <descriptions defaultDescription="Step Completed By"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_COMPLETED_BY"/>
+      </attribute>
+      <attribute id="STEP_COMPLETED_DATE" order="13">
+        <descriptions defaultDescription="Date Step Completed"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_COMPLETED_DATE"/>
+      </attribute>
+      <attribute id="STEP_COMPLETED_TS" order="14">
+        <descriptions defaultDescription="Timestamp Step Completed"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_COMPLETED_TS"/>
+      </attribute>
+      <attribute id="STEP_ASSIGNED_TO_TEAM" order="15">
+        <descriptions defaultDescription="Step Assigned to Team"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_ASSIGNED_TO_TEAM"/>
+      </attribute>
+      <attribute id="DAYS_TO_COMPLETE_STEP" order="16">
+        <descriptions defaultDescription="Days to Complete Step "/>
+        <keyMapping columnObjectName="Script_View" columnName="DAYS_TO_COMPLETE_STEP"/>
+      </attribute>
+      <attribute id="SECONDS_TO_COMPLETE_STEP" order="17">
+        <descriptions defaultDescription="Seconds to Complete Step "/>
+        <keyMapping columnObjectName="Script_View" columnName="SECONDS_TO_COMPLETE_STEP"/>
+      </attribute>
+      <attribute id="MINUTES_TO_COMPLETE_STEP" order="18">
+        <descriptions defaultDescription="Minutes to Complete Step"/>
+        <keyMapping columnObjectName="Script_View" columnName="MINUTES_TO_COMPLETE_STEP"/>
+      </attribute>
+      <attribute id="HOURS_TO_COMPLETE_STEP" order="19">
+        <descriptions defaultDescription="Hours to Complete Step"/>
+        <keyMapping columnObjectName="Script_View" columnName="HOURS_TO_COMPLETE_STEP"/>
+      </attribute>
+      <attribute id="TIME_TO_COMPLETE_STEP" order="20">
+        <descriptions defaultDescription="Time to Complete Step "/>
+        <keyMapping columnObjectName="Script_View" columnName="TIME_TO_COMPLETE_STEP"/>
+      </attribute>
+      <attribute id="TIME_KPI_BREACHED_BY" order="21">
+        <descriptions defaultDescription="Time KPI Breached By"/>
+        <keyMapping columnObjectName="Script_View" columnName="TIME_KPI_BREACHED_BY"/>
+      </attribute>
+      <attribute id="STEP_STATUS" order="22">
+        <descriptions defaultDescription="Step Status"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_STATUS"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="COUNTER" order="23" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="Count"/>
+        <measureMapping columnObjectName="Script_View" columnName="COUNTER"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

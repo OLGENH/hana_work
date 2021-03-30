@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="AHT_CASES" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="CV_AHT_TEST"/>
+  <metadata changedAt="2020-05-19 12:24:46.31"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="VARBINARY" id="CASE_GUID" length="16"/>
+        <viewAttribute datatype="VARCHAR" id="CASE_ID" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="PROCESS_TYPE" length="4"/>
+        <viewAttribute datatype="VARCHAR" id="PREVIOUS_DOCUMENT" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="NEXT_DOCUMENT" length="10"/>
+        <viewAttribute datatype="DATE" id="CASE_CREATED_DATE"/>
+        <viewAttribute datatype="TIMESTAMP" id="CASE_CREATED_TS"/>
+        <viewAttribute datatype="DATE" id="CASE_COMPLETED_DATE"/>
+        <viewAttribute datatype="TIMESTAMP" id="CASE_COMPLETED_TS"/>
+        <viewAttribute datatype="TIMESTAMP" id="CASE_DISPATCHED_TS"/>
+        <viewAttribute datatype="TIMESTAMP" id="CASE_DUE_TS"/>
+        <viewAttribute datatype="INTEGER" id="SECONDS_CASE_SLA_BREACHED_BY"/>
+        <viewAttribute datatype="DECIMAL" id="MINUTES_CASE_SLA_BREACHED_BY" length="20" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="HOURS_CASE_SLA_BREACHED_BY" length="20" scale="2"/>
+        <viewAttribute datatype="VARCHAR" id="CASE_BREACHED" length="1"/>
+        <viewAttribute datatype="INTEGER" id="SECONDS_TO_COMPLETE_CASE"/>
+        <viewAttribute datatype="DECIMAL" id="MINUTES_TO_COMPLETE_CASE" length="20" scale="2"/>
+        <viewAttribute datatype="DECIMAL" id="HOURS_TO_COMPLETE_CASE" length="20" scale="2"/>
+        <viewAttribute datatype="VARCHAR" id="CASE_STATUS" length="20"/>
+        <viewAttribute datatype="VARCHAR" id="CASE_CREATED_BY" length="13"/>
+        <viewAttribute datatype="VARCHAR" id="CASE_EMPLOYEE_RESP_ID" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="CASE_EMPLOYEE_RESP_NAME" length="100"/>
+        <viewAttribute datatype="VARCHAR" id="CASE_ORG_RESP_NAME" length="100"/>
+        <viewAttribute datatype="VARCHAR" id="CAT_LVL_1" length="100"/>
+        <viewAttribute datatype="VARCHAR" id="CAT_LVL_2" length="100"/>
+        <viewAttribute datatype="VARCHAR" id="CAT_LVL_3" length="100"/>
+        <viewAttribute datatype="VARCHAR" id="OUTCOME" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="OUTCOME_REASON" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="ACTION_DESC" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="PARTNER" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="CLASSIFICATION" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="CUSTOMER_NAME" length="100"/>
+        <viewAttribute datatype="VARCHAR" id="STATE" length="3"/>
+        <viewAttribute datatype="VARCHAR" id="DISTRIBUTION_CHANNEL" length="64"/>
+        <viewAttribute datatype="VARCHAR" id="ROUTE" length="64"/>
+        <viewAttribute datatype="INTEGER" id="COUNTER"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+
+ /*
+	TABLES USED:
+    &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/TRANSACTION_CATEGORY&quot;
+    SAPHANADB&quot;.crm_jcds
+    &quot;SAPHANADB&quot;.crmd_link
+    &quot;SAPHANADB&quot;.scapptseg
+	&quot;_SYS_BIC&quot;.&quot;public.dd_reporting/ORDER_STATUS
+	&quot;SAPHANADB&quot;.crmd_partner
+	&quot;SAPHANADB&quot;.but00
+	&quot;_SYS_BIC&quot;.&quot;public.dd_reporting.aht/AHT_DOCFLOW&quot;
+	&quot;_SYS_BIC&quot;.&quot;public.dd_reporting/TRANSACTION_RESPONSIBLE_PARTNERS&quot;
+	&quot;SAPHANADB&quot;.crmd_order_index
+	
+	This view combines existing order header details with dates, partners, docflow, and some other calculated values relevant to case completion times.
+	
+	UPDATE LOG:
+    15/5/20 | BRETMITC | initial build
+ */
+
+	initial = select 
+	  trans.guid_hi as case_guid,
+	  trans.object_id as case_id, 
+ 	  trans.process_type,
+ 	  prev_docflow.prev_id as previous_document,
+	  next_docflow.next_id as next_document, 	
+ 	  to_date(trans.posting_date) as case_created_date, 	 	
+ 	  utctolocal(to_timestamp(created_at), 'ausvic') as case_created_ts,
+	  utctolocal(to_timestamp(dates.tst_from), 'ausvic') as case_due_ts,
+ 	  trans.created_by as case_created_by, 	
+ 	  trans.cat_lvl_1,
+ 	  trans.cat_lvl_2,
+ 	  trans.cat_lvl_3,
+ 	  trans.outcome,
+ 	  trans.outcome_reason,
+ 	  trans.action_desc,
+ 	  trans.partner,
+ 	  trans.status as case_status, 
+ 	  trans.customer_name,
+ 	  trans.classification,
+ 	  s.user_name as case_completed_by,
+ 	  s.date_changed as case_completed_date,
+ 	  to_timestamp(concat(s.date_changed,concat(' ',s.time_changed))) as case_completed_ts,  
+ 	  b.name_org2, 	  
+ 	  ( select to_timestamp(concat(udate,utime)) as x from &quot;SAPHANADB&quot;.crm_jcds where stat = 'E0001' and inact &lt;> 'X' and chind = 'I' and objnr = trans.guid_hi ) as case_dispatched_ts
+ 	from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/TRANSACTION_CATEGORY&quot; as trans
+ 	inner join &quot;SAPHANADB&quot;.crmd_link as date_link on date_link.guid_hi = trans.guid_hi and date_link.objtype_hi = '05' and date_link.objtype_set = '30'
+ 	inner join &quot;SAPHANADB&quot;.crmd_link as partner_link on partner_link.guid_hi = trans.guid_hi and partner_link.objtype_hi = '05' and partner_link.objtype_set = '07'
+ 	inner join &quot;SAPHANADB&quot;.scapptseg as dates on dates.appl_guid = date_link.guid_set and dates.appt_type = 'SRV_RREADY'
+ 	left outer join &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/ORDER_STATUS&quot; as s on s.guid = trans.guid_hi and s.stat = 'E0013'
+	left outer join &quot;SAPHANADB&quot;.crmd_partner as partners on partners.guid = partner_link.guid_set and partner_fct = '00000056'
+	left outer join &quot;SAPHANADB&quot;.but000 as b on b.partner_guid = partners.partner_no
+	left outer join &quot;_SYS_BIC&quot;.&quot;public.dd_reporting.aht/AHT_DOCFLOW&quot; as prev_docflow on prev_docflow.next_guid = trans.guid_hi
+	left outer join &quot;_SYS_BIC&quot;.&quot;public.dd_reporting.aht/AHT_DOCFLOW&quot; as next_docflow on next_docflow.preceding_guid = trans.guid_hi
+	where dates.appt_type = 'SRV_RREADY'
+ 	and process_type in ('ZSRV', 'ZSRF', 'ZSRC')
+ 	order by object_id;
+ 	
+ 	
+ 	
+ 	header = select *,
+ 	
+	  case ifnull( :initial.case_due_ts , '0')
+ 	    when '0' then '0'
+ 	    else
+		 case 
+		   when :initial.case_completed_ts is not null 
+		   then seconds_between(:initial.case_due_ts,:initial.case_completed_ts) 	
+		   else seconds_between(:initial.case_due_ts,now()) 	
+		 end
+ 	  end as seconds_case_sla_breached_by,
+ 	  
+ 	  case ifnull( :initial.case_completed_ts, '0' )
+	    when '0' then '0'
+	    else seconds_between(:initial.case_created_ts,:initial.case_completed_ts) 
+	  end as seconds_to_complete_case 	
+ 	 from :initial;
+ 	
+ 	
+ 	
+    var_out = select
+      :header.case_guid,  	 	 
+ 	  :header.case_id, 	 	
+ 	  :header.process_type, 
+ 	  :header.previous_document,
+ 	  :header.next_document,
+ 	  :header.case_created_date, 	 	
+ 	  :header.case_created_ts,
+ 	  :header.case_completed_date,
+ 	  :header.case_completed_ts,
+ 	  :header.case_dispatched_ts,
+ 	  :header.case_due_ts,
+ 	  :header.seconds_case_sla_breached_by,		
+ 	 
+ 	  case ifnull( :header.case_due_ts , '0')
+ 	    when '0' then '0'
+ 	    else :header.seconds_case_sla_breached_by / 60 	
+ 	  end as minutes_case_sla_breached_by,	
+ 	 
+ 	  case ifnull( :header.case_due_ts , '0')
+ 	    when '0' then '0'
+ 	    else :header.seconds_case_sla_breached_by / 60 / 60 
+ 	  end as hours_case_sla_breached_by,	
+ 	 
+	  case 
+	    when :header.seconds_case_sla_breached_by > 0 
+	    then 'Y' 
+	    when :header.seconds_case_sla_breached_by &lt;= 0 and :header.case_due_ts is not null 
+	    then 'N'
+	    else 'N/A' 
+	  end as case_breached,    
+	
+	  :header.seconds_to_complete_case,
+	 
+	  case ifnull( :header.case_completed_ts, '0' )
+	    when '0' then '0'
+	    else :header.seconds_to_complete_case / 60 
+	  end as minutes_to_complete_case,
+	 
+	  case ifnull( :header.case_completed_ts, '0' )
+	    when '0' then '0'
+	    else :header.seconds_to_complete_case / 60 / 60
+	  end as hours_to_complete_case,
+	 
+ 	  :header.case_status, 	
+ 	  :header.case_created_by, 	
+ 	  partners.created_by_emp_id as case_employee_resp_id,
+ 	  partners.created_by_emp_name as case_employee_resp_name, 	
+ 	  :header.name_org2 as case_org_resp_name, 	
+ 	  :header.cat_lvl_1,
+ 	  :header.cat_lvl_2,
+ 	  :header.cat_lvl_3,
+ 	  :header.outcome,
+ 	  :header.outcome_reason,
+ 	  :header.action_desc,
+ 	  :header.partner,
+ 	  :header.classification,
+ 	  :header.customer_name,
+      idx.state,
+      idx.zdis_channel as distribution_channel,
+      idx.route as route,
+                  
+      count( case_id ) as counter
+   from :header 
+   left outer join &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/TRANSACTION_RESPONSIBLE_PARTNERS&quot; as partners on partners.guid = :header.case_guid
+   inner join &quot;SAPHANADB&quot;.crmd_order_index as idx on idx.header = :header.case_guid and idx.pft_1 = 'X' and idx.mainpartner = 'X' and idx.object_type = 'BUS2000223'
+   group by 
+	 :header.case_guid,
+	 :header.case_id, 	 	
+ 	 :header.process_type, 
+ 	 :header.previous_document,
+ 	 :header.next_document,
+ 	 :header.case_created_date, 	 	
+ 	 :header.case_created_ts,
+ 	 :header.case_completed_date,
+ 	 :header.case_completed_ts,
+ 	 :header.case_dispatched_ts,
+ 	 :header.case_due_ts,
+	 :header.case_status, 	
+ 	 :header.case_created_by, 
+	 :header.seconds_case_sla_breached_by,	
+	 :header.seconds_to_complete_case,
+ 	 partners.created_by_emp_id,
+ 	 partners.created_by_emp_name,	
+  	 :header.name_org2,	
+ 	 :header.cat_lvl_1,
+ 	 :header.cat_lvl_2,
+ 	 :header.cat_lvl_3,
+ 	 :header.outcome,
+ 	 :header.outcome_reason,
+ 	 :header.action_desc,
+ 	 :header.partner,
+ 	 :header.classification,
+ 	 :header.customer_name,
+     idx.state,
+     idx.zdis_channel,
+     idx.route 
+   order by case_id;
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="CASE_GUID" order="1">
+        <descriptions defaultDescription="Case Guid"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_GUID"/>
+      </attribute>
+      <attribute id="CASE_ID" order="2">
+        <descriptions defaultDescription="Case ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_ID"/>
+      </attribute>
+      <attribute id="PROCESS_TYPE" order="3">
+        <descriptions defaultDescription="Process Type"/>
+        <keyMapping columnObjectName="Script_View" columnName="PROCESS_TYPE"/>
+      </attribute>
+      <attribute id="PREVIOUS_DOCUMENT" order="4">
+        <descriptions defaultDescription="Previous Document"/>
+        <keyMapping columnObjectName="Script_View" columnName="PREVIOUS_DOCUMENT"/>
+      </attribute>
+      <attribute id="NEXT_DOCUMENT" order="5">
+        <descriptions defaultDescription="Next Document"/>
+        <keyMapping columnObjectName="Script_View" columnName="NEXT_DOCUMENT"/>
+      </attribute>
+      <attribute id="CASE_CREATED_DATE" order="6">
+        <descriptions defaultDescription="Case Created Date"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_CREATED_DATE"/>
+      </attribute>
+      <attribute id="CASE_CREATED_TS" order="7">
+        <descriptions defaultDescription="Case Created Timestamp"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_CREATED_TS"/>
+      </attribute>
+      <attribute id="CASE_COMPLETED_DATE" order="8">
+        <descriptions defaultDescription="Case Completed Date"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_COMPLETED_DATE"/>
+      </attribute>
+      <attribute id="CASE_COMPLETED_TS" order="9">
+        <descriptions defaultDescription="Case Completed Timestamp"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_COMPLETED_TS"/>
+      </attribute>
+      <attribute id="CASE_DISPATCHED_TS" order="10">
+        <descriptions defaultDescription="Case Dispatched Timestamp"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_DISPATCHED_TS"/>
+      </attribute>
+      <attribute id="CASE_DUE_TS" order="11">
+        <descriptions defaultDescription="Case SLA timestamp"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_DUE_TS"/>
+      </attribute>
+      <attribute id="SECONDS_CASE_SLA_BREACHED_BY" order="12">
+        <descriptions defaultDescription="Case SLA Breached By (seconds)"/>
+        <keyMapping columnObjectName="Script_View" columnName="SECONDS_CASE_SLA_BREACHED_BY"/>
+      </attribute>
+      <attribute id="MINUTES_CASE_SLA_BREACHED_BY" order="13">
+        <descriptions defaultDescription="Case SLA Breached By (minutes)"/>
+        <keyMapping columnObjectName="Script_View" columnName="MINUTES_CASE_SLA_BREACHED_BY"/>
+      </attribute>
+      <attribute id="HOURS_CASE_SLA_BREACHED_BY" order="14">
+        <descriptions defaultDescription="Case SLA Breached By (hours)"/>
+        <keyMapping columnObjectName="Script_View" columnName="HOURS_CASE_SLA_BREACHED_BY"/>
+      </attribute>
+      <attribute id="CASE_BREACHED" order="15">
+        <descriptions defaultDescription="Case Breached?"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_BREACHED"/>
+      </attribute>
+      <attribute id="SECONDS_TO_COMPLETE_CASE" order="16">
+        <descriptions defaultDescription="Seconds to Complete Case"/>
+        <keyMapping columnObjectName="Script_View" columnName="SECONDS_TO_COMPLETE_CASE"/>
+      </attribute>
+      <attribute id="MINUTES_TO_COMPLETE_CASE" order="17">
+        <descriptions defaultDescription="Minutes to Complete Case"/>
+        <keyMapping columnObjectName="Script_View" columnName="MINUTES_TO_COMPLETE_CASE"/>
+      </attribute>
+      <attribute id="HOURS_TO_COMPLETE_CASE" order="18">
+        <descriptions defaultDescription="Hours to Complete Case"/>
+        <keyMapping columnObjectName="Script_View" columnName="HOURS_TO_COMPLETE_CASE"/>
+      </attribute>
+      <attribute id="CASE_STATUS" order="19">
+        <descriptions defaultDescription="Case Status"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_STATUS"/>
+      </attribute>
+      <attribute id="CASE_CREATED_BY" order="20">
+        <descriptions defaultDescription="Case Created By"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_CREATED_BY"/>
+      </attribute>
+      <attribute id="CASE_EMPLOYEE_RESP_ID" order="21">
+        <descriptions defaultDescription="Employee Responsible ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_EMPLOYEE_RESP_ID"/>
+      </attribute>
+      <attribute id="CASE_EMPLOYEE_RESP_NAME" order="22">
+        <descriptions defaultDescription="Employee Responsible Name"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_EMPLOYEE_RESP_NAME"/>
+      </attribute>
+      <attribute id="CASE_ORG_RESP_NAME" order="23">
+        <descriptions defaultDescription="Team Responsible Name"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_ORG_RESP_NAME"/>
+      </attribute>
+      <attribute id="CAT_LVL_1" order="24">
+        <descriptions defaultDescription="Category Level 1"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_LVL_1"/>
+      </attribute>
+      <attribute id="CAT_LVL_2" order="25">
+        <descriptions defaultDescription="Category Level 2"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_LVL_2"/>
+      </attribute>
+      <attribute id="CAT_LVL_3" order="26">
+        <descriptions defaultDescription="Action (Cat 3)"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_LVL_3"/>
+      </attribute>
+      <attribute id="OUTCOME" order="27">
+        <descriptions defaultDescription="Outcome"/>
+        <keyMapping columnObjectName="Script_View" columnName="OUTCOME"/>
+      </attribute>
+      <attribute id="OUTCOME_REASON" order="28">
+        <descriptions defaultDescription="Outcome Reason"/>
+        <keyMapping columnObjectName="Script_View" columnName="OUTCOME_REASON"/>
+      </attribute>
+      <attribute id="ACTION_DESC" order="29">
+        <descriptions defaultDescription="Action Description"/>
+        <keyMapping columnObjectName="Script_View" columnName="ACTION_DESC"/>
+      </attribute>
+      <attribute id="PARTNER" order="30">
+        <descriptions defaultDescription="Custmer ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="PARTNER"/>
+      </attribute>
+      <attribute id="CLASSIFICATION" order="31">
+        <descriptions defaultDescription="Classification"/>
+        <keyMapping columnObjectName="Script_View" columnName="CLASSIFICATION"/>
+      </attribute>
+      <attribute id="CUSTOMER_NAME" order="32">
+        <descriptions defaultDescription="Customer Name"/>
+        <keyMapping columnObjectName="Script_View" columnName="CUSTOMER_NAME"/>
+      </attribute>
+      <attribute id="STATE" order="33">
+        <descriptions defaultDescription="State"/>
+        <keyMapping columnObjectName="Script_View" columnName="STATE"/>
+      </attribute>
+      <attribute id="DISTRIBUTION_CHANNEL" order="34">
+        <descriptions defaultDescription="Distribution Channel"/>
+        <keyMapping columnObjectName="Script_View" columnName="DISTRIBUTION_CHANNEL"/>
+      </attribute>
+      <attribute id="ROUTE" order="35">
+        <descriptions defaultDescription="Route"/>
+        <keyMapping columnObjectName="Script_View" columnName="ROUTE"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="COUNTER" order="36" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="Counter"/>
+        <measureMapping columnObjectName="Script_View" columnName="COUNTER"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

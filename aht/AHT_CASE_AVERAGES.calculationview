@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="AHT_CASE_AVERAGES" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="TREE_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" outputViewType="Aggregation">
+  <origin/>
+  <descriptions defaultDescription="AHT_CASE_AVERAGES"/>
+  <metadata changedAt="2020-05-15 15:51:10.984"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources>
+    <DataSource id="AHT_CASES" type="CALCULATION_VIEW">
+      <viewAttributes allViewAttributes="true"/>
+      <resourceUri>/public.dd_reporting.aht/calculationviews/AHT_CASES</resourceUri>
+    </DataSource>
+  </dataSources>
+  <calculationViews/>
+  <logicalModel id="AHT_CASES">
+    <descriptions/>
+    <attributes>
+      <attribute id="CASE_ID" order="1" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case ID"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_ID"/>
+      </attribute>
+      <attribute id="CUSTOMER_NAME" order="2" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Customer Name"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CUSTOMER_NAME"/>
+      </attribute>
+      <attribute id="PROCESS_TYPE" order="3" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Process Type"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="PROCESS_TYPE"/>
+      </attribute>
+      <attribute id="CASE_STATUS" order="4" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Status"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_STATUS"/>
+      </attribute>
+      <attribute id="CAT_LVL_1" order="5" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Category Level 1"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CAT_LVL_1"/>
+      </attribute>
+      <attribute id="CAT_LVL_2" order="6" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Category Level 2"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CAT_LVL_2"/>
+      </attribute>
+      <attribute id="CAT_LVL_3" order="7" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Action (Cat 3)"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CAT_LVL_3"/>
+      </attribute>
+      <attribute id="OUTCOME" order="8" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Outcome"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="OUTCOME"/>
+      </attribute>
+      <attribute id="OUTCOME_REASON" order="9" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Outcome Reason"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="OUTCOME_REASON"/>
+      </attribute>
+      <attribute id="PREVIOUS_DOCUMENT" order="10" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Previous Document"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="PREVIOUS_DOCUMENT"/>
+      </attribute>
+      <attribute id="NEXT_DOCUMENT" order="11" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Next Document"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="NEXT_DOCUMENT"/>
+      </attribute>
+      <attribute id="CASE_CREATED_TS" order="12" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Created Timestamp"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_CREATED_TS"/>
+      </attribute>
+      <attribute id="CASE_COMPLETED_TS" order="13" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Completed Timestamp"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_COMPLETED_TS"/>
+      </attribute>
+      <attribute id="CASE_DUE_TS" order="14" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case SLA timestamp"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_DUE_TS"/>
+      </attribute>
+      <attribute id="CASE_DISPATCHED_TS" order="15" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Dispatched Timesamp"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_DISPATCHED_TS"/>
+      </attribute>
+      <attribute id="DISTRIBUTION_CHANNEL" order="16" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Distribution Channel"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="DISTRIBUTION_CHANNEL"/>
+      </attribute>
+      <attribute id="CASE_CREATED_DATE" order="17" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Created Date"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_CREATED_DATE"/>
+      </attribute>
+      <attribute id="CASE_CREATED_BY" order="18" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Created By"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_CREATED_BY"/>
+      </attribute>
+      <attribute id="CASE_EMPLOYEE_RESP_NAME" order="19" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Employee Responsible Name"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_EMPLOYEE_RESP_NAME"/>
+      </attribute>
+      <attribute id="CASE_ORG_RESP_NAME" order="20" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Team Responsible Name"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_ORG_RESP_NAME"/>
+      </attribute>
+      <attribute id="CLASSIFICATION" order="21" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Classification"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CLASSIFICATION"/>
+      </attribute>
+      <attribute id="CASE_BREACHED" order="22" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Breached?"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_BREACHED"/>
+      </attribute>
+      <attribute id="STATE" order="23" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="State"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="STATE"/>
+      </attribute>
+      <attribute id="ROUTE" order="24" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Route"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="ROUTE"/>
+      </attribute>
+      <attribute id="ACTION_DESC" order="25" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Action Description"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="ACTION_DESC"/>
+      </attribute>
+      <attribute id="CASE_COMPLETED_DATE" order="26" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="Case Completed Date"/>
+        <keyMapping columnObjectName="AHT_CASES" columnName="CASE_COMPLETED_DATE"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="COUNTER" order="27" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="Counter"/>
+        <measureMapping columnObjectName="AHT_CASES" columnName="COUNTER"/>
+      </measure>
+      <measure id="SECONDS_CASE_SLA_BREACHED_BY" order="28" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average SLA Breach (seconds)"/>
+        <measureMapping columnObjectName="AHT_CASES" columnName="SECONDS_CASE_SLA_BREACHED_BY"/>
+      </measure>
+      <measure id="MINUTES_CASE_SLA_BREACHED_BY" order="29" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average SLA Breach (minutes)"/>
+        <measureMapping columnObjectName="AHT_CASES" columnName="MINUTES_CASE_SLA_BREACHED_BY"/>
+      </measure>
+      <measure id="HOURS_CASE_SLA_BREACHED_BY" order="30" aggregationType="sum" engineAggregation="avg" measureType="simple">
+        <descriptions defaultDescription="Average SLA Breach (hours)"/>
+        <measureMapping columnObjectName="AHT_CASES" columnName="HOURS_CASE_SLA_BREACHED_BY"/>
+      </measure>
+      <measure id="SECONDS_TO_COMPLETE_CASE" order="31" aggregationType="sum" engineAggregation="avg" measureType="simple">
+        <descriptions defaultDescription="Average Case Completion Time (seconds)"/>
+        <measureMapping columnObjectName="AHT_CASES" columnName="SECONDS_TO_COMPLETE_CASE"/>
+      </measure>
+      <measure id="MINUTES_TO_COMPLETE_CASE" order="32" aggregationType="avg" measureType="simple">
+        <descriptions defaultDescription="Average Case Completion Time (minutes)"/>
+        <measureMapping columnObjectName="AHT_CASES" columnName="MINUTES_TO_COMPLETE_CASE"/>
+      </measure>
+      <measure id="HOURS_TO_COMPLETE_CASE" order="33" aggregationType="sum" engineAggregation="avg" measureType="simple">
+        <descriptions defaultDescription="Average Case Completion Time (hours)"/>
+        <measureMapping columnObjectName="AHT_CASES" columnName="HOURS_TO_COMPLETE_CASE"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+        <rectangleSize height="0" width="0"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

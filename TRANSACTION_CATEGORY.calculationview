@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="TRANSACTION_CATEGORY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="TRANSACTION_CATEGORY"/>
+  <metadata changedAt="2020-05-19 15:10:03.498"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="NVARCHAR" id="CLIENT" length="3"/>
+        <viewAttribute datatype="VARBINARY" id="GUID_HI" length="16"/>
+        <viewAttribute datatype="NVARCHAR" id="OBJECT_ID" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="PROCESS_TYPE" length="4"/>
+        <viewAttribute datatype="NVARCHAR" id="STATUS" length="20"/>
+        <viewAttribute datatype="NVARCHAR" id="POSTING_DATE" length="8"/>
+        <viewAttribute datatype="NVARCHAR" id="POSTING_DATE_READABLE" length="10"/>
+        <viewAttribute datatype="DECIMAL" id="CREATED_AT" length="15" scale="0"/>
+        <viewAttribute datatype="DECIMAL" id="VAL_FROM" length="15" scale="0"/>
+        <viewAttribute datatype="DECIMAL" id="VAL_TO" length="15" scale="0"/>
+        <viewAttribute datatype="NVARCHAR" id="CREATED_BY" length="13"/>
+        <viewAttribute datatype="DECIMAL" id="CHANGED_AT" length="15" scale="0"/>
+        <viewAttribute datatype="NVARCHAR" id="CHANGED_BY" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="DESCRIPTION" length="250"/>
+        <viewAttribute datatype="NVARCHAR" id="PARTNER" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="CUSTOMER_NAME" length="80"/>
+        <viewAttribute datatype="NVARCHAR" id="KATALOGART" length="16"/>
+        <viewAttribute datatype="NVARCHAR" id="CODEGRUPPE" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="CODE" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="CAT_ID" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="ASP_ID" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="CAT_LVL_1" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="CAT_LVL_2" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="CAT_LVL_3" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="MARKET_FUNCTION" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="CUSTOMER_STATE" length="3"/>
+        <viewAttribute datatype="NVARCHAR" id="CLASSIFICATION" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="DISTRIBUTION_CHANNEL" length="11"/>
+        <viewAttribute datatype="NVARCHAR" id="ROOT_CAUSE" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="OUTCOME" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="OUTCOME_REASON" length="50"/>
+        <viewAttribute datatype="INTEGER" id="NUMBEROFTRANSACTIONS"/>
+        <viewAttribute datatype="NVARCHAR" id="CREATED_WEEK" length="6"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>/*
+	&quot;_SYS_BIC&quot;.&quot;public.dd_reporting::TRANSACTION_CATEGORY&quot;
+	TABLES USED:
+		CRMD_ORDER_INDEX - order index for sold-to party
+		CRMD_ORDERADM_H - order data for reporting
+		CRMD_LINK - link to osset
+		CRMD_SRV_OSSET - link to subject
+		CRMD_SRV_SUBJECT - subject profile and categorisation information
+		&quot;_SYS_BIC&quot;.&quot;public.dd_reporting/CATEGORY_HIERARCY&quot; - read cat schema hierarchy with texts
+		&quot;_SYS_BIC&quot;.&quot;public.dd_reporting/INTERACTION_CATEGORY&quot; - get categorisation schema aspect and category IDs
+		&quot;_SYS_BIC&quot;.&quot;public.dd_reporting/CUSTOMER&quot; - customer data, including 
+		&quot;_SYS_BIC&quot;.&quot;public.dd_reporting/B_HIERARCHY&quot; - customer B-Hierarchy for delivery channel and distributor
+		&quot;_SYS_BIC&quot;.&quot;public.dd_reporting/ORDER_STATUS&quot; - order status details
+	
+	This view reads core transaction details with categorisastion.
+
+	UPDATE LOG:
+	2020-03-24 | JWAECHTE | Initial creation
+	2020-05-14 | JWAECHTE | Add Root Cause
+
+
+*/
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+ 	
+ 	trans_cat = select crmd_orderadm_h.client,
+ 				    crmd_orderadm_h.guid,
+					cat_as.asp_id, cat_as.asp_guid, cat_as.val_from, cat_as.val_to, cat_as.asp_state,
+					cat_ca_cat.cat_id, cat_ca_cat.cat_guid, cat_ca_out.cat_id as root_cause_cat_id, cat_ca_out.cat_guid as root_cause_cat_guid,
+					concat( concat( subject.katalogart, subject.codegruppe ), concat( ' ', subject.code ) ) as OBJ_EXTKEY,
+					subject.katalogart, subject.codegruppe, subject.code
+ 	            from &quot;SAPHANADB&quot;.&quot;CRMD_ORDERADM_H&quot; as crmd_orderadm_h
+ 	            left outer join &quot;SAPHANADB&quot;.&quot;CRMD_LINK&quot; as crmd_link on crmd_link.guid_hi = crmd_orderadm_h.guid
+				left outer join &quot;SAPHANADB&quot;.&quot;CRMD_SRV_OSSET&quot; as crmd_srv_osset on crmd_srv_osset.guid_set = crmd_link.guid_set
+				left outer join &quot;SAPHANADB&quot;.&quot;CRMD_SRV_SUBJECT&quot; as subject on subject.guid_ref = crmd_srv_osset.guid 
+				left outer join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_AS&quot; as cat_as on subject.asp_id = cat_as.asp_id 
+				left outer join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CA&quot; as cat_ca_out on subject.cat_id = cat_ca_out.cat_id and cat_as.asp_guid = cat_ca_out.asp_guid 
+				left outer join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CA&quot; as cat_ca_cat on subject.cat_id = cat_ca_cat.cat_id and cat_as.asp_guid = cat_ca_cat.asp_guid 
+ 	            where ( ( cat_as.val_from &lt;= crmd_orderadm_h.created_at and cat_as.val_to >= crmd_orderadm_h.created_at
+ 	                    and ( cat_as.asp_state = 'V' or cat_as.asp_state = 'U' or cat_as.asp_state = 'R' ) -- 'U' = Deployed, 'V' = Active. We don't read Draft aspects
+ 	                    and cat_as.asp_id &lt;> 'Z_ROOT_CAUSE' ) 
+ 	               or subject.codegruppe = 'ZACTRSN' )
+ 	               and ( crmd_orderadm_h.process_type = 'ZINT'
+ 	                     or crmd_orderadm_h.process_type = 'ZSRF'
+ 	                     or crmd_orderadm_h.process_type = 'ZSRC'
+ 	                     or crmd_orderadm_h.process_type = 'ZSRV' );
+ 	               
+	trans = select crmd_orderadm_h.client,
+ 				    crmd_orderadm_h.guid,
+					crmd_orderadm_h.posting_date,
+					crmd_orderadm_h.created_at,
+					crmd_orderadm_h.object_id,
+					crmd_orderadm_h.process_type,
+					crmd_orderadm_h.created_by,
+					crmd_orderadm_h.changed_at,
+					crmd_orderadm_h.changed_by,
+					crmd_orderadm_h.description,
+					max( :trans_cat.asp_id ) as asp_id, max( :trans_cat.asp_guid ) as asp_guid,
+					max( :trans_cat.val_from ) as val_from, max( :trans_cat.val_to ) as val_to,
+					max( :trans_cat.cat_id ) as cat_id, max( :trans_cat.cat_guid ) as cat_guid,
+					max( :trans_cat.obj_extkey ) as obj_extkey,
+					max( :trans_cat.katalogart ) as katalogart, max( :trans_cat.codegruppe ) as codegruppe, max( :trans_cat.code ) as code,
+					:trans_cat.root_cause_cat_guid, :trans_cat.root_cause_cat_id
+			 from &quot;SAPHANADB&quot;.&quot;CRMD_ORDERADM_H&quot; as crmd_orderadm_h
+			 left outer join :trans_cat on crmd_orderadm_h.guid = :trans_cat.guid
+			    where crmd_orderadm_h.process_type = 'ZINT' or crmd_orderadm_h.process_type = 'ZSRF'
+			    or crmd_orderadm_h.process_type = 'ZSRC' or crmd_orderadm_h.process_type = 'ZSRV'
+			 group by crmd_orderadm_h.client, crmd_orderadm_h.guid, crmd_orderadm_h.posting_date,
+			          crmd_orderadm_h.created_at, crmd_orderadm_h.object_id, crmd_orderadm_h.process_type,
+			          crmd_orderadm_h.created_by, crmd_orderadm_h.changed_at, crmd_orderadm_h.changed_by,
+			          crmd_orderadm_h.description, :trans_cat.root_cause_cat_guid, :trans_cat.root_cause_cat_id;
+			          
+	category = select * from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/CATEGORY_HIERARCHY&quot;;			          
+		
+	int_cat = select * from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/INTERACTION_CATEGORY&quot;;
+	
+	customer = select * from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/CUSTOMER&quot;;
+	
+	b_hierarchy = select * from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/B_HIERARCHY&quot;;
+	
+	order_status = select * from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/ORDER_STATUS&quot;;
+	
+ 	--JOINS-- 	       
+					 
+	join_int_cat = select :trans.client, :trans.guid , :trans.posting_date, :trans.created_at, :trans.object_id, 
+			 			  :trans.process_type, :trans.created_by, :trans.changed_at, :trans.changed_by, :trans.description,
+			 			  :int_cat.asp_id, :trans.asp_guid,
+     					  :int_cat.val_from, :int_cat.val_to,
+     					  :int_cat.cat_id, :trans.cat_guid,
+     					  cast( null as varchar ) as obj_extkey,
+			 			  :trans.katalogart, :trans.codegruppe, :trans.code,
+			 			  cast( null as varbinary ) as root_cause_cat_guid, cast( null as nvarchar ) as root_cause_cat_id
+     					  from :trans inner join :int_cat on :trans.obj_extkey = :int_cat.obj_extkey
+     					  where :trans.created_at >= :int_cat.val_from and :trans.created_at  &lt;= :int_cat.val_to;
+	
+	--inner join for join_int_cat only selects categorised interactions
+	join3 = select * from :trans where ( :trans.process_type &lt;> 'ZINT' or :trans.obj_extkey is null ); -- we only want ZINT if they are uncategorized
+	:join3.insert(:join_int_cat);
+		
+	/*join4 = select :join3.client, :join3.guid as guid_hi, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, 
+					:category.cat_1_desc, :category.cat_2_desc, :category.cat_3_desc
+					from :join3
+					inner join :category
+						on :category.lowest_cat_id = :join3.cat_id and :category.asp_id = :join3.asp_id
+						where :category.val_from &lt;= :join3.created_at and :category.val_to >= :join3.created_at 
+					group by :join3.client, :join3.guid, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, cat_1_desc, cat_2_desc, cat_3_desc;*/
+	
+	-- find the categorized ZSRV, ZSRC, ZSRF by joining on :category
+	join4 = select :join3.client, :join3.guid as guid_hi, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, 
+					:category.cat_1_desc, cast( null as nvarchar(50) ) as cat_2_desc, cast( null as nvarchar(50) ) as cat_3_desc, :join3.root_cause_cat_guid, :join3.root_cause_cat_id
+					from :join3
+					inner join :category
+						on :category.cat_1_id = :join3.cat_id and :category.asp_id = :join3.asp_id
+						where :category.val_from &lt;= :join3.created_at and :category.val_to >= :join3.created_at 
+					group by :join3.client, :join3.guid, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, cat_1_desc, cat_2_desc, cat_3_desc,
+					root_cause_cat_guid, root_cause_cat_id;
+				     	
+	join5 = select :join3.client, :join3.guid as guid_hi, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, 
+					:category.cat_1_desc, :category.cat_2_desc, cast( null as nvarchar(50) ) as cat_3_desc, :join3.root_cause_cat_guid, :join3.root_cause_cat_id
+					from :join3
+					inner join :category
+						on :category.cat_2_id = :join3.cat_id and :category.asp_id = :join3.asp_id
+						where :category.val_from &lt;= :join3.created_at and :category.val_to >= :join3.created_at 
+					group by :join3.client, :join3.guid, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, cat_1_desc, cat_2_desc, cat_3_desc,
+					root_cause_cat_guid, root_cause_cat_id;
+				     	
+	join6 = select :join3.client, :join3.guid as guid_hi, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, 
+					:category.cat_1_desc, :category.cat_2_desc, :category.cat_3_desc, :join3.root_cause_cat_guid, :join3.root_cause_cat_id
+					from :join3
+					inner join :category
+						on :category.cat_3_id = :join3.cat_id and :category.asp_id = :join3.asp_id
+						where :category.val_from &lt;= :join3.created_at and :category.val_to >= :join3.created_at 
+					group by :join3.client, :join3.guid, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, cat_1_desc, cat_2_desc, cat_3_desc,
+					root_cause_cat_guid, root_cause_cat_id;
+	
+	--find the uncategorized ZSRV, ZSRC, ZSRF
+	join7 = select :join3.client, :join3.guid as guid_hi, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, 
+					cast( null as nvarchar(50) ) as cat_1_desc, cast( null as nvarchar(50) ) as cat_2_desc, cast( null as nvarchar(50) ) as cat_3_desc, :join3.root_cause_cat_guid, :join3.root_cause_cat_id
+					from :join3
+					where :join3.cat_id is null
+					group by :join3.client, :join3.guid, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code,
+					root_cause_cat_guid, root_cause_cat_id;
+	
+	:join7.insert(:join4);					
+	:join7.insert(:join5);
+	:join7.insert(:join6);
+	
+	join_root_cause = select :join7.client, :join7.guid_hi, :join7.posting_date, :join7.created_at, :join7.object_id, 
+					:join7.process_type, :join7.created_by, :join7.changed_at, :join7.changed_by, :join7.description,
+					:join7.val_from, :join7.val_to, :join7.asp_id, :join7.cat_id,
+					:join7.katalogart, :join7.codegruppe, :join7.code, 
+					:join7.cat_1_desc, :join7.cat_2_desc, :join7.cat_3_desc,
+					:category.cat_1_desc as root_cause, :category.cat_2_desc as outcome, :category.cat_3_desc as outcome_reason
+					from :join7 
+					left outer join &quot;SAPHANADB&quot;.&quot;CRMD_LINK&quot; as crmd_link on crmd_link.guid_hi = :join7.guid_hi
+					left outer join &quot;SAPHANADB&quot;.&quot;CRMD_SRV_OSSET&quot; as crmd_srv_osset on crmd_srv_osset.guid_set = crmd_link.guid_set
+					left outer join &quot;SAPHANADB&quot;.&quot;CRMD_SRV_SUBJECT&quot; as subject on subject.guid_ref = crmd_srv_osset.guid 
+					left outer join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_AS&quot; as cat_as on subject.asp_id = cat_as.asp_id and cat_as.asp_id = 'Z_ROOT_CAUSE'
+					left outer join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CA&quot; as cat_ca_outcome on subject.cat_id = cat_ca_outcome.cat_id and cat_as.asp_guid = cat_ca_outcome.asp_guid 
+					left outer join :category on :category.lowest_cat_guid = cat_ca_outcome.cat_guid;
+				
+	/*aggr_no_cat = select :join3.client, :join3.guid as guid_hi, :join3.posting_date, :join3.created_at, :join3.object_id, 
+					:join3.process_type, :join3.created_by, :join3.changed_at, :join3.changed_by, :join3.description,
+					:join3.val_from, :join3.val_to, :join3.asp_id, :join3.cat_id,
+					:join3.katalogart, :join3.codegruppe, :join3.code, 
+					cast( null as nvarchar(50) ) as cat_1_desc, cast( null as nvarchar(50) ) as cat_2_desc, cast( null as nvarchar(50) ) as cat_3_desc
+					from :join3 where katalogart is null and cat_id is null;
+					
+	:join7.insert(:aggr_no_cat);*/
+	
+	join_assigned_bp = select :join_root_cause.client, :join_root_cause.guid_hi, :join_root_cause.posting_date, :join_root_cause.created_at, :join_root_cause.object_id, 
+								:join_root_cause.process_type, :join_root_cause.created_by, :join_root_cause.changed_at, :join_root_cause.changed_by, :join_root_cause.description,
+								:join_root_cause.val_from, :join_root_cause.val_to, :join_root_cause.asp_id, :join_root_cause.cat_id,
+								:join_root_cause.katalogart, :join_root_cause.codegruppe, :join_root_cause.code, 
+								:join_root_cause.cat_1_desc, :join_root_cause.cat_2_desc, :join_root_cause.cat_3_desc,
+								idx.partner, idx.market_func_t, idx.region,
+								concat( idx.name_org1, idx.name_org2 ) as customer_name,
+								idx.classification,
+								root_cause, outcome, outcome_reason
+							from :join_root_cause left outer join ( select * from &quot;SAPHANADB&quot;.&quot;CRMD_ORDER_INDEX&quot; as idx
+								left outer join :customer
+									on idx.partner_no = :customer.partner
+								inner join &quot;SAPHANADB&quot;.&quot;CRMD_ORDERADM_H&quot; as header on idx.header = header.guid
+							where ( ( header.process_type = 'ZSRV' and idx.pft_1 = 'X' )   --Sold-To party for main partner on Service Requests
+							    or ( header.process_type = 'ZSRC' and idx.pft_1 = 'X' )   --Sold-To party for main partner on Complaints
+							    or ( header.process_type = 'ZSRF' and idx.pft_1 = 'X' )   --Sold-To party for main partner on Fridges
+							    or ( header.process_type = 'ZINT' and idx.pft_6 = 'X' ) ) --Main-partner for interaction record
+						    ) as idx
+							on :join_root_cause.guid_hi = idx.header;
+
+	join_status = select * from :join_assigned_bp inner join :order_status on :join_assigned_bp.guid_hi = :order_status.guid;
+     
+     --OUTPUT--
+	var_out = select client, guid_hi, object_id, process_type, 
+	          stat_desc as status,
+	          cast( posting_date as nvarchar ) as posting_date,
+	          cast( concat( substr(posting_date,7,2), concat( '.', concat( substr(posting_date,5,2), concat('.',substr(posting_date,1,4))))) as nvarchar(10)) as posting_date_readable,
+	          created_at, val_from, val_to, created_by, changed_at, changed_by, description,
+			  partner,
+			  cast( customer_name as nvarchar ) as customer_name,
+	          cast( katalogart as nvarchar ) as katalogart,
+	          cast( codegruppe as nvarchar ) as codegruppe,
+	          cast( CODE as nvarchar ) as code, cast( cat_id as nvarchar ) as cat_id,
+	          cast( asp_id as nvarchar ) as asp_id,
+	          cast( cat_1_desc as nvarchar ) as cat_lvl_1, cast( cat_2_desc as nvarchar ) as cat_lvl_2, cast( cat_3_desc as nvarchar ) as cat_lvl_3,
+	          market_func_t as market_function,
+	          region as customer_state,
+	          classification,
+	          b_hierarchy.distribution_channel,
+			  root_cause, outcome, outcome_reason,
+	          count( distinct( guid_hi ) ) as NUMBEROFTRANSACTIONS,
+			  cast ( concat( year (TO_DATE(created_at)), week (TO_DATE(created_at)) ) as nvarchar(6) ) as created_week
+		      from :join_status
+	          left outer join (
+	          	select * from :b_hierarchy where :b_hierarchy.valid_from &lt;= current_timestamp and :b_hierarchy.valid_to >= current_timestamp
+	          ) as b_hierarchy on b_hierarchy.partner_1 = :join_status.partner
+	          group by client, guid_hi, object_id, process_type, stat_desc, posting_date, created_at, val_from, val_to, created_by, changed_at, changed_by, description, partner,
+			  customer_name, katalogart, codegruppe, code, cat_id, asp_id,
+			  cat_1_desc, cat_2_desc, cat_3_desc,
+			  market_func_t, region, classification,
+			  b_hierarchy.distribution_channel,
+			  root_cause, outcome, outcome_reason;
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="CLIENT" order="1">
+        <descriptions defaultDescription="CLIENT"/>
+        <keyMapping columnObjectName="Script_View" columnName="CLIENT"/>
+      </attribute>
+      <attribute id="GUID_HI" order="2">
+        <descriptions defaultDescription="GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="GUID_HI"/>
+      </attribute>
+      <attribute id="OBJECT_ID" order="3">
+        <descriptions defaultDescription="Transaction ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="OBJECT_ID"/>
+      </attribute>
+      <attribute id="PROCESS_TYPE" order="4">
+        <descriptions defaultDescription="Process Type"/>
+        <keyMapping columnObjectName="Script_View" columnName="PROCESS_TYPE"/>
+      </attribute>
+      <attribute id="STATUS" order="5">
+        <descriptions defaultDescription="Transaction Status"/>
+        <keyMapping columnObjectName="Script_View" columnName="STATUS"/>
+      </attribute>
+      <attribute id="POSTING_DATE" order="6">
+        <descriptions defaultDescription="Posting Date"/>
+        <keyMapping columnObjectName="Script_View" columnName="POSTING_DATE"/>
+      </attribute>
+      <attribute id="POSTING_DATE_READABLE" order="7">
+        <descriptions defaultDescription="Formatted Posting Date"/>
+        <keyMapping columnObjectName="Script_View" columnName="POSTING_DATE_READABLE"/>
+      </attribute>
+      <attribute id="CREATED_AT" hidden="false" order="8">
+        <descriptions defaultDescription="Created At (UTC)"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_AT"/>
+      </attribute>
+      <attribute id="VAL_FROM" hidden="true" order="9">
+        <descriptions defaultDescription="VAL_FROM"/>
+        <keyMapping columnObjectName="Script_View" columnName="VAL_FROM"/>
+      </attribute>
+      <attribute id="VAL_TO" hidden="true" order="10">
+        <descriptions defaultDescription="VAL_TO"/>
+        <keyMapping columnObjectName="Script_View" columnName="VAL_TO"/>
+      </attribute>
+      <attribute id="CREATED_BY" order="11">
+        <descriptions defaultDescription="Created By"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_BY"/>
+      </attribute>
+      <attribute id="CHANGED_AT" order="12">
+        <descriptions defaultDescription="Changed At (UTC)"/>
+        <keyMapping columnObjectName="Script_View" columnName="CHANGED_AT"/>
+      </attribute>
+      <attribute id="CHANGED_BY" order="13">
+        <descriptions defaultDescription="Changed By"/>
+        <keyMapping columnObjectName="Script_View" columnName="CHANGED_BY"/>
+      </attribute>
+      <attribute id="DESCRIPTION" order="14">
+        <descriptions defaultDescription="Desctiption"/>
+        <keyMapping columnObjectName="Script_View" columnName="DESCRIPTION"/>
+      </attribute>
+      <attribute id="PARTNER" order="15">
+        <descriptions defaultDescription="Partner ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="PARTNER"/>
+      </attribute>
+      <attribute id="CUSTOMER_NAME" order="16">
+        <descriptions defaultDescription="Customer Name"/>
+        <keyMapping columnObjectName="Script_View" columnName="CUSTOMER_NAME"/>
+      </attribute>
+      <attribute id="KATALOGART" hidden="true" order="17">
+        <descriptions defaultDescription="KATALOGART"/>
+        <keyMapping columnObjectName="Script_View" columnName="KATALOGART"/>
+      </attribute>
+      <attribute id="CODEGRUPPE" hidden="true" order="18">
+        <descriptions defaultDescription="CODEGRUPPE"/>
+        <keyMapping columnObjectName="Script_View" columnName="CODEGRUPPE"/>
+      </attribute>
+      <attribute id="CODE" hidden="true" order="19">
+        <descriptions defaultDescription="CODE"/>
+        <keyMapping columnObjectName="Script_View" columnName="CODE"/>
+      </attribute>
+      <attribute id="CAT_ID" order="20">
+        <descriptions defaultDescription="Category ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_ID"/>
+      </attribute>
+      <attribute id="ASP_ID" hidden="true" order="21">
+        <descriptions defaultDescription="asp_id"/>
+        <keyMapping columnObjectName="Script_View" columnName="ASP_ID"/>
+      </attribute>
+      <attribute id="CAT_LVL_1" order="22">
+        <descriptions defaultDescription="Level 1 Category"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_LVL_1"/>
+      </attribute>
+      <attribute id="CAT_LVL_2" order="23">
+        <descriptions defaultDescription="Level 2 Category"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_LVL_2"/>
+      </attribute>
+      <attribute id="CAT_LVL_3" order="24">
+        <descriptions defaultDescription="Level 3 Category"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_LVL_3"/>
+      </attribute>
+      <attribute id="MARKET_FUNCTION" order="25">
+        <descriptions defaultDescription="Market Function"/>
+        <keyMapping columnObjectName="Script_View" columnName="MARKET_FUNCTION"/>
+      </attribute>
+      <attribute id="CUSTOMER_STATE" order="26">
+        <descriptions defaultDescription="Customer State"/>
+        <keyMapping columnObjectName="Script_View" columnName="CUSTOMER_STATE"/>
+      </attribute>
+      <attribute id="CLASSIFICATION" order="27">
+        <descriptions defaultDescription="Customer Classification"/>
+        <keyMapping columnObjectName="Script_View" columnName="CLASSIFICATION"/>
+      </attribute>
+      <attribute id="DISTRIBUTION_CHANNEL" order="28">
+        <descriptions defaultDescription="Distribution Channel"/>
+        <keyMapping columnObjectName="Script_View" columnName="DISTRIBUTION_CHANNEL"/>
+      </attribute>
+      <attribute id="ROOT_CAUSE" order="29">
+        <descriptions defaultDescription="ACTION_DESC"/>
+        <keyMapping columnObjectName="Script_View" columnName="ROOT_CAUSE"/>
+      </attribute>
+      <attribute id="OUTCOME" order="30">
+        <descriptions defaultDescription="OUTCOME"/>
+        <keyMapping columnObjectName="Script_View" columnName="OUTCOME"/>
+      </attribute>
+      <attribute id="OUTCOME_REASON" order="31">
+        <descriptions defaultDescription="OUTCOME_REASON"/>
+        <keyMapping columnObjectName="Script_View" columnName="OUTCOME_REASON"/>
+      </attribute>
+      <attribute id="CREATED_WEEK" order="33">
+        <descriptions defaultDescription="Created Week"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_WEEK"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="NUMBEROFTRANSACTIONS" order="32" aggregationType="count" measureType="simple">
+        <descriptions defaultDescription="Number Of Transactions"/>
+        <measureMapping columnObjectName="Script_View" columnName="NUMBEROFTRANSACTIONS"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

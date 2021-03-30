@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CATEGORY_HIERARCHY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="CATEGORY_HIERARCHY"/>
+  <metadata changedAt="2020-05-15 08:45:46.798"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="NVARCHAR" id="CAT_1_DESC" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="CAT_2_DESC" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="CAT_3_DESC" length="50"/>
+        <viewAttribute datatype="VARBINARY" id="CAT_1_GUID" length="16"/>
+        <viewAttribute datatype="VARBINARY" id="CAT_2_GUID" length="16"/>
+        <viewAttribute datatype="VARBINARY" id="CAT_3_GUID" length="16"/>
+        <viewAttribute datatype="NVARCHAR" id="CAT_1_ID" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="CAT_2_ID" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="CAT_3_ID" length="10"/>
+        <viewAttribute datatype="VARBINARY" id="LOWEST_CAT_GUID" length="16"/>
+        <viewAttribute datatype="NVARCHAR" id="LOWEST_CAT_ID" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="ASP_ID" length="40"/>
+        <viewAttribute datatype="VARBINARY" id="ASP_GUID" length="16"/>
+        <viewAttribute datatype="DECIMAL" id="VAL_FROM" length="15" scale="0"/>
+        <viewAttribute datatype="DECIMAL" id="VAL_TO" length="15" scale="0"/>
+        <viewAttribute datatype="INTEGER" id="LOWEST_CAT_GUID_COUNT"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> /*
+	&quot;_SYS_BIC&quot;.&quot;public.dd_reporting::CATEGORY_HIERARCHY&quot;
+	TABLES USED:
+		CRMC_ERMS_CAT_AS - categorisation schema aspect ID and validity dates
+		CRMC_ERMS_CAT_CA - categorisation schema category ID
+		CRMC_ERMS_CAT_CT - categorisation schema category texts
+		CRMC_ERMS_CAT_HI - categorisation schema hierarchy links
+
+	
+
+This view reads 3-level Categorisation Schema hierarchy as a reverse tree (from leaf -> root),
+	reverses the tree (to root -> leaf),
+	then transposes results left if they are only 2 layers. e.g.
+		ROOT  | BRANCH | LEAF
+		cat_1 | cat_2  | cat_3
+		null  | cat_4  | cat_5
+	becomes
+		ROOT  | BRANCH | LEAF
+		cat_1 | cat_2  | cat_3
+		cat_4 | cat_5  | null
+
+	UPDATE LOG:
+	2020-03-24 | JWAECHTE | Initial creation
+
+
+*/
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+ 	 var_out = select ( case when cat_1_guid is null then cat_2_desc else cat_1_desc end ) as CAT_1_DESC,
+				   ( case when cat_1_guid is null then cat_3_desc else cat_2_desc end ) as cat_2_desc,
+				   ( case when cat_1_guid is null then null else cat_3_desc end ) as cat_3_desc,
+				   ( case when cat_1_guid is null then cat_2_guid else cat_1_guid end ) as cat_1_guid,
+				   ( case when cat_1_guid is null then cat_3_guid else cat_2_guid end ) as cat_2_guid,
+				   ( case when cat_1_guid is null then null else cat_3_guid end ) as cat_3_guid,
+				   ( case when cat_1_guid is null then cat_2_id else cat_1_id end ) as cat_1_id,
+				   ( case when cat_1_guid is null then cat_3_id else cat_2_id end ) as cat_2_id,
+				   ( case when cat_1_guid is null then null else cat_3_id end ) as cat_3_id,
+				   cat_3_guid as lowest_cat_guid,
+				   cat_3_id as lowest_cat_id,
+					asp_id,
+					asp_guid,
+					val_from, val_to,
+				   count( cat_3_guid ) as lowest_cat_guid_count
+				  from ( select hi_1.cat_desc  as cat_1_desc, 
+				  				hi_2.cat_desc  as cat_2_desc, 
+				  				hi_3.cat_desc  as cat_3_desc,
+								hi_1.node_guid as cat_1_guid, 
+								hi_2.node_guid as cat_2_guid,
+								hi_3.node_guid as cat_3_guid,
+								hi_1.cat_id    as cat_1_id, 
+								hi_2.cat_id    as cat_2_id, 
+								hi_3.cat_id    as cat_3_id,
+							   	hi_3.asp_id    as asp_id,
+							   	hi_3.asp_guid  as asp_guid,
+							   	hi_3.val_from  as val_from,
+							   	hi_3.val_to    as val_to
+						from ( select ct_3.cat_desc, 
+									  hi_3.node_guid,
+									  hi_3.pare_guid,
+									  hi_3.node_leaf,
+									  ca_3.cat_id,
+									  as_3.asp_id,
+									  as_3.asp_guid,
+									  as_3.val_from,
+									  as_3.val_to	
+							from &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_HI&quot; as hi_3
+							inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CT&quot; as ct_3
+								on hi_3.node_guid = ct_3.cat_guid
+							  inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CA&quot; as ca_3
+							    on hi_3.node_guid = ca_3.cat_guid
+							  inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_AS&quot; as as_3
+							    on hi_3.tree_guid = as_3.asp_guid
+							    where as_3.asp_state = 'U' or as_3.asp_state = 'V' or as_3.asp_state = 'R'
+							) as hi_3
+						inner join ( select * from &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_HI&quot; as hi_2
+							  inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CT&quot; as ct_2
+								on hi_2.node_guid = ct_2.cat_guid
+							  inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CA&quot; as ca_2
+							    on hi_2.node_guid = ca_2.cat_guid
+							) as hi_2
+						on hi_2.node_guid = hi_3.pare_guid
+						left outer join ( select * from &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_HI&quot; as hi_1
+							  inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CT&quot; as ct_1
+								on hi_1.node_guid = ct_1.cat_guid
+							  inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CA&quot; as ca_1
+							    on hi_1.node_guid = ca_1.cat_guid
+								) as hi_1
+						on hi_1.node_guid = hi_2.pare_guid
+						where hi_3.node_leaf = 'X' )
+					group by cat_1_guid, cat_2_guid, cat_3_guid,
+							 cat_1_desc, cat_2_desc, cat_3_desc,
+							 cat_1_id, cat_2_id, cat_3_id, asp_id, asp_guid, val_from, val_to; 
+						
+	root_is_leaf = select cat_desc as cat_1_desc,
+							cast( null as nvarchar) as cat_2_desc,
+							cast( null as nvarchar) as cat_3_desc,
+							ca.cat_guid as cat_1_guid,
+							cast( null as varbinary) as cat_2_guid,
+							cast( null as varbinary) as cat_3_guid,
+							cast( ca.cat_id as nvarchar(10)) as cat_1_id,
+							cast( null as nvarchar) as cat_2_id,
+							cast( null as nvarchar) as cat_3_id,
+							ca.cat_guid as lowest_cat_guid,
+							cast( ca.cat_id as nvarchar(10)) as lowest_cat_id,
+							cast( _as.asp_id as nvarchar(40)) as asp_id,
+							_as.asp_guid as asp_guid,
+							val_from,
+							val_to,
+							cast( count( ca.cat_guid ) as int ) as lowest_cat_guid_count
+						from &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_HI&quot; as hi
+						inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CT&quot; as ct
+							on hi.node_guid = ct.cat_guid
+						inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CA&quot; as ca
+						    on hi.node_guid = ca.cat_guid
+					 	inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_AS&quot; as _as
+						    on hi.tree_guid = _as.asp_guid
+						where hi.pare_guid = hi.tree_guid and hi.node_leaf = 'X'
+						  and _as.asp_state = 'U' or _as.asp_state = 'V' or _as.asp_state = 'R'
+						  and ca.cat_guid not in ( select lowest_cat_guid from :var_out )
+					group by cat_desc, ca.cat_guid, ca.cat_id, asp_id, _as.asp_guid, val_from, val_to;
+						
+	:var_out.insert(:root_is_leaf);
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="CAT_1_DESC" order="1">
+        <descriptions defaultDescription="CAT_1_DESC"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_1_DESC"/>
+      </attribute>
+      <attribute id="CAT_2_DESC" order="2">
+        <descriptions defaultDescription="CAT_2_DESC"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_2_DESC"/>
+      </attribute>
+      <attribute id="CAT_3_DESC" order="3">
+        <descriptions defaultDescription="CAT_3_DESC"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_3_DESC"/>
+      </attribute>
+      <attribute id="CAT_1_GUID" order="4">
+        <descriptions defaultDescription="CAT_1_GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_1_GUID"/>
+      </attribute>
+      <attribute id="CAT_2_GUID" order="5">
+        <descriptions defaultDescription="CAT_2_GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_2_GUID"/>
+      </attribute>
+      <attribute id="CAT_3_GUID" order="6">
+        <descriptions defaultDescription="CAT_3_GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_3_GUID"/>
+      </attribute>
+      <attribute id="CAT_1_ID" order="7">
+        <descriptions defaultDescription="CAT_1_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_1_ID"/>
+      </attribute>
+      <attribute id="CAT_2_ID" order="8">
+        <descriptions defaultDescription="CAT_2_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_2_ID"/>
+      </attribute>
+      <attribute id="CAT_3_ID" order="9">
+        <descriptions defaultDescription="CAT_3_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_3_ID"/>
+      </attribute>
+      <attribute id="LOWEST_CAT_GUID" order="10">
+        <descriptions defaultDescription="LOWEST_CAT_GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="LOWEST_CAT_GUID"/>
+      </attribute>
+      <attribute id="LOWEST_CAT_ID" order="11">
+        <descriptions defaultDescription="LOWEST_CAT_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="LOWEST_CAT_ID"/>
+      </attribute>
+      <attribute id="ASP_ID" order="12">
+        <descriptions defaultDescription="ASP_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="ASP_ID"/>
+      </attribute>
+      <attribute id="ASP_GUID" hidden="false" order="13">
+        <descriptions defaultDescription="ASP_GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="ASP_GUID"/>
+      </attribute>
+      <attribute id="VAL_FROM" order="14">
+        <descriptions defaultDescription="VAL_FROM"/>
+        <keyMapping columnObjectName="Script_View" columnName="VAL_FROM"/>
+      </attribute>
+      <attribute id="VAL_TO" order="15">
+        <descriptions defaultDescription="VAL_TO"/>
+        <keyMapping columnObjectName="Script_View" columnName="VAL_TO"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="LOWEST_CAT_GUID_COUNT" order="16" aggregationType="count" measureType="simple">
+        <descriptions defaultDescription="LOWEST_CAT_GUID_COUNT"/>
+        <measureMapping columnObjectName="Script_View" columnName="LOWEST_CAT_GUID_COUNT"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

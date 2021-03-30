@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dimension:dimension xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:AccessControl="http://www.sap.com/ndb/SQLCoreModelAccessControl.ecore" xmlns:Dimension="http://www.sap.com/ndb/BiModelDimension.ecore" schemaVersion="1.2" id="CUSTOMER" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" dimensionType="Standard">
+  <origin/>
+  <descriptions defaultDescription="Customer related reporting data"/>
+  <metadata changedAt="2020-05-08 12:34:34.722"/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <attributes>
+    <attribute id="PARTNER" key="true" order="1" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="PARTNER"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="BUT000" columnName="PARTNER"/>
+    </attribute>
+    <attribute id="ZZ_MARKET_FUNC" order="2" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="MARKET_FUNCTION"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="BUT000" columnName="ZZ_MARKET_FUNC"/>
+    </attribute>
+    <attribute id="NAME_ORG1" order="3" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="NAME_ORG1"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="BUT000" columnName="NAME_ORG1"/>
+    </attribute>
+    <attribute id="NAME_ORG2" order="4" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="NAME_ORG2"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="BUT000" columnName="NAME_ORG2"/>
+    </attribute>
+    <attribute id="NAME_FIRST" order="5" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="NAME_FIRST"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="BUT000" columnName="NAME_FIRST"/>
+    </attribute>
+    <attribute id="NAME_LAST" order="6" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="NAME_LAST"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="BUT000" columnName="NAME_LAST"/>
+    </attribute>
+    <attribute id="REGION" order="7" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="REGION"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="ADRC" columnName="REGION"/>
+    </attribute>
+    <attribute id="TELNR_CALL" order="8" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="TELNR_CALL"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="ADR2" columnName="TELNR_CALL"/>
+    </attribute>
+    <attribute id="SMTP_ADDR" order="9" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="SMTP_ADDR"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="ADR6" columnName="SMTP_ADDR"/>
+    </attribute>
+    <attribute id="TEXT" hidden="true" order="10" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CUSTOMER_CLASS"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="CRMC_CLASSIF_T" columnName="TEXT"/>
+    </attribute>
+    <attribute id="DESCRIPTION" hidden="true" order="13" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="DESCRIPTION"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="ZSDT_MARKET_FUNC" columnName="DESCRIPTION"/>
+    </attribute>
+  </attributes>
+  <calculatedAttributes>
+    <calculatedAttribute id="CLASSIFICATION" hidden="false" order="11" semanticType="empty" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CLASSIFICATION"/>
+      <keyCalculation datatype="NVARCHAR" expressionLanguage="COLUMN_ENGINE" length="50">
+        <formula>&quot;TEXT&quot;</formula>
+      </keyCalculation>
+    </calculatedAttribute>
+    <calculatedAttribute id="MARKET_FUNC_T" hidden="false" order="12" semanticType="empty" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="MARKET_FUNC_T"/>
+      <keyCalculation datatype="NVARCHAR" expressionLanguage="COLUMN_ENGINE" length="10">
+        <formula>&quot;DESCRIPTION&quot;</formula>
+      </keyCalculation>
+    </calculatedAttribute>
+  </calculatedAttributes>
+  <privateDataFoundation>
+    <tableProxies>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="BUT000"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="BUT020"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="ADRC"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="ADR2"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="ADR6"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="CRMM_BUT_FRG0041"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="CRMC_CLASSIF_T"/>
+        <columnFilter columnName="SPRAS">
+          <valueFilter xsi:type="AccessControl:SingleValueFilter" including="true" value="E"/>
+        </columnFilter>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="ZSDT_MARKET_FUNC"/>
+      </tableProxy>
+    </tableProxies>
+    <joins>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="BUT000"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="BUT020"/>
+        <leftColumns>
+          <columnName>PARTNER</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>PARTNER</columnName>
+        </rightColumns>
+        <properties cardinality="C1_N" joinOperator="Equal" joinType="leftOuter"/>
+      </join>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="BUT020"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="ADRC"/>
+        <leftColumns>
+          <columnName>ADDRNUMBER</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>ADDRNUMBER</columnName>
+        </rightColumns>
+        <properties cardinality="C1_N" joinOperator="Equal" joinType="leftOuter"/>
+      </join>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="BUT000"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="ADR6"/>
+        <leftColumns>
+          <columnName>ADDRCOMM</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>ADDRNUMBER</columnName>
+        </rightColumns>
+        <properties cardinality="C1_N" joinOperator="Equal" joinType="leftOuter"/>
+      </join>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="BUT000"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="ADR2"/>
+        <leftColumns>
+          <columnName>ADDRCOMM</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>ADDRNUMBER</columnName>
+        </rightColumns>
+        <properties cardinality="C1_N" joinOperator="Equal" joinType="leftOuter"/>
+      </join>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="BUT000"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="CRMM_BUT_FRG0041"/>
+        <leftColumns>
+          <columnName>PARTNER_GUID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>PARTNER_GUID</columnName>
+        </rightColumns>
+        <properties cardinality="C1_N" joinOperator="Equal" joinType="leftOuter"/>
+      </join>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="CRMM_BUT_FRG0041"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="CRMC_CLASSIF_T"/>
+        <leftColumns>
+          <columnName>CLASSIFIC</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>CLASSIFIC</columnName>
+        </rightColumns>
+        <properties cardinality="C1_N" joinOperator="Equal" joinType="leftOuter"/>
+      </join>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="BUT000"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="ZSDT_MARKET_FUNC"/>
+        <leftColumns>
+          <columnName>ZZ_MARKET_FUNC</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>MARKET_FUNCTION</columnName>
+        </rightColumns>
+        <properties cardinality="C1_N" joinOperator="Equal" joinType="leftOuter"/>
+      </join>
+    </joins>
+    <layout>
+      <shapes>
+        <shape modelObjectName="BUT000" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="270" y="16"/>
+        </shape>
+        <shape modelObjectName="BUT020" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="542" y="544"/>
+        </shape>
+        <shape modelObjectName="ADRC" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="801" y="32"/>
+        </shape>
+        <shape modelObjectName="ADR2" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="542" y="817"/>
+        </shape>
+        <shape modelObjectName="ADR6" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="16" y="688"/>
+        </shape>
+        <shape modelObjectName="CRMM_BUT_FRG0041" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="-23" y="24"/>
+        </shape>
+        <shape modelObjectName="CRMC_CLASSIF_T" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="540" y="81"/>
+        </shape>
+        <shape modelObjectName="ZSDT_MARKET_FUNC" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="510" y="1430"/>
+        </shape>
+        <shape modelObjectName="DataFoundation" modelObjectNameSpace="DataFoundation" modelObjectType="repository">
+          <upperLeftCorner x="40" y="85"/>
+          <rectangleSize height="0" width="0"/>
+        </shape>
+      </shapes>
+    </layout>
+  </privateDataFoundation>
+  <hierarchies/>
+</Dimension:dimension>

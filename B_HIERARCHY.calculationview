@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="B_HIERARCHY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="B_HIERARCHY"/>
+  <metadata changedAt="2020-05-07 10:41:29.964"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="NVARCHAR" id="PARTNER_1" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="PARTNER_2" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="PARTNER_3" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="PARTNER_4" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="PARTNER_5" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="DISTRIBUTOR" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="DISTRIBUTION_CHANNEL" length="11"/>
+        <viewAttribute datatype="TIMESTAMP" id="VALID_FROM"/>
+        <viewAttribute datatype="TIMESTAMP" id="VALID_TO"/>
+        <viewAttribute datatype="INTEGER" id="NUMBER_OF_RECORDS"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> 
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+    
+    level_1_to_3 = select concat( '0000', substring( bp.description, 1, 6 ) ) as partner_1, struct.valid_from as valid_from_1, struct.valid_to as valid_to_1,
+		subq.partner as partner_2, subq.valid_from as valid_from_2, subq.valid_to as valid_to_2,
+		subq2.partner as partner_3, subq2.valid_from as valid_from_3, subq2.valid_to as valid_to_3, subq2.parent_guid as parent_guid
+	from &quot;SAPHANADB&quot;.&quot;BUT_HIER_STRUCT&quot; as struct
+	inner join &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; as bp on struct.node_guid = bp.node_guid
+		left outer join ( 
+			select concat( '0000', substring( bp.description, 1, 6 ) ) as partner, struct.node_guid, struct.parent_guid, struct.valid_from, struct.valid_to
+				from &quot;SAPHANADB&quot;.&quot;BUT_HIER_STRUCT&quot; as struct
+				inner join &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; as bp on struct.node_guid = bp.node_guid
+			where struct.node_guid in ( select node_guid from &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; where DESCRIPTION like '%/10000101B' )
+		) as subq on subq.node_guid = struct.parent_guid
+		left outer join ( 
+			select concat( '0000', substring( bp.description, 1, 6 ) ) as partner, struct.node_guid, struct.parent_guid, struct.valid_from, struct.valid_to
+				from &quot;SAPHANADB&quot;.&quot;BUT_HIER_STRUCT&quot; as struct
+				inner join &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; as bp on struct.node_guid = bp.node_guid
+			where struct.node_guid in ( select node_guid from &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; where DESCRIPTION like '%/10000101B' )
+		) as subq2 on subq2.node_guid = subq.parent_guid
+	where struct.node_guid in ( select node_guid from &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; where DESCRIPTION like '%/10000101B' )
+		and substring( bp.description, 1, 6 ) like_regexpr '[0-9]{6}';
+	    --and (struct.parent_guid = '00000000000000000000000000000000' or ( struct.valid_from &lt;= subq.valid_to and struct.valid_to >= subq.valid_from and ( struct.valid_to >= '20190801000000' and struct.valid_from &lt;= '20190801000000' or struct.valid_from >= '20190801000000' ) ) )
+	    --and (subq.parent_guid = '00000000000000000000000000000000' or ( subq.valid_from &lt;= subq2.valid_to and subq.valid_to >= subq2.valid_from and ( subq2.valid_to >= '20190801000000' and subq2.valid_from &lt;= '20190801000000' or subq2.valid_from >= '20190801000000' ) ) );
+    
+    
+    level_4_to_5 = select struct.node_guid as node_guid, concat( '0000', substring( bp.description, 1, 6 ) ) as partner_4, struct.valid_from as valid_from_4, struct.valid_to as valid_to_4,
+					subq.partner as partner_5, subq.valid_from as valid_from_5, subq.valid_to as valid_to_5
+				from &quot;SAPHANADB&quot;.&quot;BUT_HIER_STRUCT&quot; as struct
+				inner join &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; as bp on struct.node_guid = bp.node_guid
+					left outer join ( 
+						select concat( '0000', substring( bp.description, 1, 6 ) ) as partner, struct.node_guid, struct.parent_guid, struct.valid_from, struct.valid_to
+							from &quot;SAPHANADB&quot;.&quot;BUT_HIER_STRUCT&quot; as struct
+							inner join &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; as bp on struct.node_guid = bp.node_guid
+						where struct.node_guid in ( select node_guid from &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; where DESCRIPTION like '%/10000101B' )
+					) as subq on subq.node_guid = struct.parent_guid
+					left outer join ( 
+						select substring( bp.description, 1, 6 ) as partner, struct.node_guid, struct.parent_guid, struct.valid_from, struct.valid_to
+							from &quot;SAPHANADB&quot;.&quot;BUT_HIER_STRUCT&quot; as struct
+							inner join &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; as bp on struct.node_guid = bp.node_guid
+						where struct.node_guid in ( select node_guid from &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; where DESCRIPTION like '%/10000101B' )
+					) as subq2 on subq2.node_guid = subq.parent_guid
+				where struct.node_guid in ( select node_guid from &quot;SAPHANADB&quot;.&quot;BUT_HIER_NODE_D&quot; where DESCRIPTION like '%/10000101B' );
+				
+				
+	/*level_1_to_3_dates = select :level_1_to_3.partner_1 as partner_1_dt, max( :level_1_to_3.valid_from_1 ) as valid_from, max( :level_1_to_3.valid_to_1 ) as valid_to
+							from :level_1_to_3 group by :level_1_to_3.partner_1;
+	level_4_to_5_dates = select :level_4_to_5.partner_4 as partner_4_dt, max( :level_4_to_5.valid_from_4 ) as valid_from, max( :level_4_to_5.valid_to_4 ) as valid_to
+							from :level_4_to_5 group by :level_4_to_5.partner_4;*/
+					
+	level_1_to_5 = select :level_1_to_3.partner_1, :level_1_to_3.partner_2, :level_1_to_3.partner_3,
+						:level_4_to_5.partner_4, :level_4_to_5.partner_5,
+					case  when :level_4_to_5.partner_5 is null
+						  then case when :level_1_to_3.partner_3 is null
+									then :level_1_to_3.partner_1
+									else :level_1_to_3.partner_3 end
+						  else :level_4_to_5.partner_5 end as distributor,
+					case when :level_1_to_3.valid_from_3 is null
+						 then greatest(:level_1_to_3.valid_from_1)
+						 when :level_4_to_5.valid_from_5 is null
+						 then greatest(:level_1_to_3.valid_from_1, :level_1_to_3.valid_from_2, :level_1_to_3.valid_from_3)
+						 else greatest(:level_1_to_3.valid_from_1, :level_1_to_3.valid_from_2, :level_1_to_3.valid_from_3, :level_4_to_5.valid_from_4, :level_4_to_5.valid_from_5)
+						 end  as valid_from, 
+					case when :level_1_to_3.valid_from_3 is null
+						 then least(:level_1_to_3.valid_to_1)
+						 when :level_4_to_5.valid_from_5 is null
+					 	 then least(:level_1_to_3.valid_to_1, :level_1_to_3.valid_to_2, :level_1_to_3.valid_to_3)
+					 	 else least(:level_1_to_3.valid_to_1, :level_1_to_3.valid_to_2, :level_1_to_3.valid_to_3, :level_4_to_5.valid_to_4, :level_4_to_5.valid_to_5)  
+					 	 end as valid_to
+					from :level_1_to_3
+					left outer join :level_4_to_5
+					on :level_1_to_3.parent_guid = :level_4_to_5.node_guid
+					where :level_1_to_3.partner_2 is null
+					   or ( :level_1_to_3.partner_2 is not null and :level_1_to_3.partner_3 is not null )
+					   or ( :level_4_to_5.partner_4 is not null and :level_4_to_5.partner_5 is not null );
+ 	
+ 
+ 	 var_out = select partner_1, partner_2, partner_3, partner_4, partner_5, distributor,
+ 	 				case when distributor = partner_1 then 'Mengniu' 
+ 	 					 else case when but000.name_org1 like '%Lion%'
+ 	 					 		   then 'LRT'
+ 	 					 		   when but000.name_org1 is null then 'Mengniu'
+ 	 					 		   else 'Distributor'
+ 	 					      end
+ 	 			    end as distribution_channel,
+ 	 			    cast( :level_1_to_5.valid_from as timestamp ) as valid_from, cast( :level_1_to_5.valid_to as timestamp ) as valid_to,
+ 	 				count(distinct(partner_1)) as number_of_records from :level_1_to_5
+ 	 			 left outer join &quot;SAPHANADB&quot;.&quot;BUT000&quot; as but000 on :level_1_to_5.distributor = but000.partner
+			 	 group by partner_1, partner_2, partner_3, partner_4, partner_5, distributor, but000.name_org1, :level_1_to_5.valid_from, :level_1_to_5.valid_to;
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="PARTNER_1" order="1">
+        <descriptions defaultDescription="PARTNER_1"/>
+        <keyMapping columnObjectName="Script_View" columnName="PARTNER_1"/>
+      </attribute>
+      <attribute id="PARTNER_2" order="2">
+        <descriptions defaultDescription="ROUTE_1"/>
+        <keyMapping columnObjectName="Script_View" columnName="PARTNER_2"/>
+      </attribute>
+      <attribute id="PARTNER_3" order="3">
+        <descriptions defaultDescription="PARTNER_3"/>
+        <keyMapping columnObjectName="Script_View" columnName="PARTNER_3"/>
+      </attribute>
+      <attribute id="PARTNER_4" order="4">
+        <descriptions defaultDescription="ROUTE_2"/>
+        <keyMapping columnObjectName="Script_View" columnName="PARTNER_4"/>
+      </attribute>
+      <attribute id="PARTNER_5" order="5">
+        <descriptions defaultDescription="PARTNER_5"/>
+        <keyMapping columnObjectName="Script_View" columnName="PARTNER_5"/>
+      </attribute>
+      <attribute id="DISTRIBUTOR" order="6">
+        <descriptions defaultDescription="DISTRIBUTOR"/>
+        <keyMapping columnObjectName="Script_View" columnName="DISTRIBUTOR"/>
+      </attribute>
+      <attribute id="DISTRIBUTION_CHANNEL" order="7">
+        <descriptions defaultDescription="DISTRIBUTION_CHANNEL"/>
+        <keyMapping columnObjectName="Script_View" columnName="DISTRIBUTION_CHANNEL"/>
+      </attribute>
+      <attribute id="VALID_FROM" order="8">
+        <descriptions defaultDescription="VALID_FROM"/>
+        <keyMapping columnObjectName="Script_View" columnName="VALID_FROM"/>
+      </attribute>
+      <attribute id="VALID_TO" order="9">
+        <descriptions defaultDescription="VALID_TO"/>
+        <keyMapping columnObjectName="Script_View" columnName="VALID_TO"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="NUMBER_OF_RECORDS" order="10" aggregationType="count" measureType="simple">
+        <descriptions defaultDescription="NUMBER_OF_RECORDS"/>
+        <measureMapping columnObjectName="Script_View" columnName="NUMBER_OF_RECORDS"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="ORDER_ITEMS" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="ORDER_ITEMS"/>
+  <metadata changedAt="2020-05-11 23:07:47.676"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="VARBINARY" id="TRANSACTION_GUID" length="16"/>
+        <viewAttribute datatype="VARBINARY" id="ITEM_GUID" length="16"/>
+        <viewAttribute datatype="VARCHAR" id="CHKLST_ID" length="8"/>
+        <viewAttribute datatype="VARCHAR" id="STAT_DESC" length="40"/>
+        <viewAttribute datatype="VARCHAR" id="USER_NAME" length="12"/>
+        <viewAttribute datatype="DATE" id="DATE_CHANGED"/>
+        <viewAttribute datatype="TIME" id="TIME_CHANGED"/>
+        <viewAttribute datatype="INTEGER" id="NUMBER_OF_TRANSACTIONS"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition>
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+
+chklst = select chklst_id,
+				description
+				
+		 from &quot;SAPHANADB&quot;.&quot;CRMC_CHKLST_T&quot;
+		 where language = 'EN' ;
+		 
+		 
+		 
+var_out = SELECT order_i.header as transaction_guid,
+				  order_i.guid   as item_guid,
+				  checklist.azcstep_id as chklst_id,
+				--  description,
+				  ord_stat.stat_desc,
+				  ord_stat.user_name,
+				  ord_stat.date_changed,
+				  ord_stat.time_changed,
+				  count(order_i.guid) as number_of_transactions
+		FROM  &quot;SAPHANADB&quot;.&quot;CRMD_ORDERADM_I&quot; as order_i
+		inner join &quot;SAPHANADB&quot;.&quot;CRMD_CHKLSTAZ&quot; as checklist ON order_i.guid = checklist.guid
+		inner join &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/ORDER_STATUS&quot; as ord_stat on order_i.header = ord_stat.guid
+		where order_i.object_type = 'BUS2000199'
+		
+		group by order_i.header,
+				  order_i.guid,
+				  checklist.azcstep_id,
+				  ord_stat.stat_desc,
+				  ord_stat.user_name,
+				  ord_stat.date_changed,
+				  ord_stat.time_changed;
+	
+				  
+	
+
+
+
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="TRANSACTION_GUID" order="1">
+        <descriptions defaultDescription="TRANSACTION_GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRANSACTION_GUID"/>
+      </attribute>
+      <attribute id="ITEM_GUID" order="2">
+        <descriptions defaultDescription="ITEM_GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="ITEM_GUID"/>
+      </attribute>
+      <attribute id="CHKLST_ID" order="3">
+        <descriptions defaultDescription="CHKLST_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CHKLST_ID"/>
+      </attribute>
+      <attribute id="STAT_DESC" order="4">
+        <descriptions defaultDescription="STAT_DESC"/>
+        <keyMapping columnObjectName="Script_View" columnName="STAT_DESC"/>
+      </attribute>
+      <attribute id="USER_NAME" order="5">
+        <descriptions defaultDescription="USER_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="USER_NAME"/>
+      </attribute>
+      <attribute id="DATE_CHANGED" order="6">
+        <descriptions defaultDescription="DATE_CHANGED"/>
+        <keyMapping columnObjectName="Script_View" columnName="DATE_CHANGED"/>
+      </attribute>
+      <attribute id="TIME_CHANGED" order="7">
+        <descriptions defaultDescription="TIME_CHANGED"/>
+        <keyMapping columnObjectName="Script_View" columnName="TIME_CHANGED"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="NUMBER_OF_TRANSACTIONS" order="8" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="NUMBER_OF_TRANSACTIONS"/>
+        <measureMapping columnObjectName="Script_View" columnName="NUMBER_OF_TRANSACTIONS"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

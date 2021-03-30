@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CATEGORY_COMPLIANCE_LEGACY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="CV_SCRIPT_TEST"/>
+  <metadata changedAt="2020-05-18 10:15:02.107" createdAt="2020-05-18 10:15:02.107"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="VARCHAR" id="OBJECT_ID" length="10"/>
+        <viewAttribute datatype="TIMESTAMP" id="CREATED_AT"/>
+        <viewAttribute datatype="VARCHAR" id="CREATED_BY" length="15"/>
+        <viewAttribute datatype="VARCHAR" id="CAT_DESC_NEW" length="100"/>
+        <viewAttribute datatype="VARCHAR" id="CAT_DESC_OLD" length="100"/>
+        <viewAttribute datatype="TIMESTAMP" id="CHANGED_AT"/>
+        <viewAttribute datatype="VARCHAR" id="CHANGED_BY" length="15"/>
+        <viewAttribute datatype="VARCHAR" id="ASP_ID" length="20"/>
+        <viewAttribute datatype="INTEGER" id="MISCATEGORISED"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> 
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+ 	 var_out = select
+	header.object_id,
+	cast( header.created_at as timestamp ) as created_at,
+	header.created_by,
+	cat_new_text.cat_desc as cat_desc_new, cat_old_text.cat_desc as cat_desc_old,
+
+	cast( concat(cdhdr.udate, cdhdr.utime) as timestamp ) as changed_at,
+	cdhdr.username as changed_by,
+	aspect.asp_id,
+	count(object_id) as miscategorised
+	from (
+		select substr(new.tabkey, 36) as cat_guid_new,
+			   substr(old.tabkey, 36) as cat_guid_old,
+			   new.changenr as changenr,
+			   new.mandant as client
+			   from &quot;SAPHANADB&quot;.&quot;CDPOS&quot; as new
+			   inner join &quot;SAPHANADB&quot;.&quot;CDPOS&quot; as old on new.changenr = old.changenr
+			   where new.tabname = 'CRMA_SERVICE_OS' and new.chngind = 'I' and old.chngind = 'D'
+			   order by new.objectid
+	) as changes
+	inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CA&quot; as cat_old on cat_old.cat_guid = changes.cat_guid_old
+	inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CA&quot; as cat_new on cat_new.cat_guid = changes.cat_guid_new and cat_new.asp_guid = cat_old.asp_guid
+	inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_AS&quot; as aspect on cat_old.asp_guid = aspect.asp_guid
+	inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CT&quot; as cat_new_text on cat_new.cat_guid = cat_new_text.cat_guid
+	inner join &quot;SAPHANADB&quot;.&quot;CRMC_ERMS_CAT_CT&quot; as cat_old_text on cat_old.cat_guid = cat_old_text.cat_guid
+	inner join &quot;SAPHANADB&quot;.&quot;CDHDR&quot; as cdhdr on changes.changenr = cdhdr.changenr and cdhdr.mandant = changes.client
+	inner join &quot;SAPHANADB&quot;.&quot;CRMD_ORDERADM_H&quot; as header on cdhdr.objectid = header.guid and cdhdr.mandant = header.client
+		where cat_new_text.cat_desc != 'Keying Error'
+		  and cat_new_text.cat_desc != 'Customer Urgent Request'
+		  and cat_new_text.cat_desc != 'Customer Error/ Failed to Order'
+		  and cat_new_text.cat_desc != 'Logistics Picking'
+		  and cat_new_text.cat_desc != 'Driver Issue'
+		  and cat_new_text.cat_desc != 'Damaged Stock'
+		  and cat_new_text.cat_desc != 'Stock Shrotage'
+		  and cat_new_text.cat_desc != 'Temperature Rejection'
+		  and cat_new_text.cat_desc != 'Duplicate Order'
+		  and cat_new_text.cat_desc != 'Route Change'
+   group by object_id,created_at,created_by,changed_at, changed_by,asp_id,CAT_NEW_TEXT.CAT_DESC,CAT_OLD_TEXT.CAT_DESC,CDHDR.UDATE,CDHDR.UTIME,CDHDR.USERNAME;
+ 	 
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="OBJECT_ID" order="1">
+        <descriptions defaultDescription="Object ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="OBJECT_ID"/>
+      </attribute>
+      <attribute id="CREATED_AT" order="2">
+        <descriptions defaultDescription="Date Created"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_AT"/>
+      </attribute>
+      <attribute id="CREATED_BY" order="3">
+        <descriptions defaultDescription="Created By"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_BY"/>
+      </attribute>
+      <attribute id="CAT_DESC_NEW" order="4">
+        <descriptions defaultDescription="New Category"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_DESC_NEW"/>
+      </attribute>
+      <attribute id="CAT_DESC_OLD" order="5">
+        <descriptions defaultDescription="Old Category"/>
+        <keyMapping columnObjectName="Script_View" columnName="CAT_DESC_OLD"/>
+      </attribute>
+      <attribute id="CHANGED_AT" order="6">
+        <descriptions defaultDescription="Date Changed"/>
+        <keyMapping columnObjectName="Script_View" columnName="CHANGED_AT"/>
+      </attribute>
+      <attribute id="CHANGED_BY" order="7">
+        <descriptions defaultDescription="Changed By"/>
+        <keyMapping columnObjectName="Script_View" columnName="CHANGED_BY"/>
+      </attribute>
+      <attribute id="ASP_ID" order="8">
+        <descriptions defaultDescription="Aspect ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="ASP_ID"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="MISCATEGORISED" order="9" aggregationType="count" measureType="simple">
+        <descriptions defaultDescription="Total Miscategorised"/>
+        <measureMapping columnObjectName="Script_View" columnName="MISCATEGORISED"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

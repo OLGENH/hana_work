@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="EMAIL_ITEMS" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="EMAIL_ITEMS"/>
+  <metadata changedAt="2020-05-05 14:55:30.244"/>
+  <localVariables>
+    <variable id="CREATED_ON">
+      <descriptions defaultDescription="CREATED_ON"/>
+      <variableProperties datatype="VARCHAR" mandatory="false">
+        <valueDomain type="AttributeValue">
+          <attribute name="CREATED_DATE"/>
+        </valueDomain>
+        <selection multiLine="false" type="Interval"/>
+      </variableProperties>
+    </variable>
+  </localVariables>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="VARCHAR" id="RESPONSIBLE_TEAM" length="40"/>
+        <viewAttribute datatype="VARCHAR" id="RESPONSIBLE_TEAM_NAME" length="40"/>
+        <viewAttribute datatype="DATE" id="CREATED_DATE"/>
+        <viewAttribute datatype="VARCHAR" id="CREATED_TIME" length="8"/>
+        <viewAttribute datatype="VARCHAR" id="CREATED_HOUR" length="8"/>
+        <viewAttribute datatype="NVARCHAR" id="CREATED_WEEK" length="6"/>
+        <viewAttribute datatype="NVARCHAR" id="CREATED_YEAR" length="4"/>
+        <viewAttribute datatype="NVARCHAR" id="DESCRIPTION" length="120"/>
+        <viewAttribute datatype="NVARCHAR" id="STATUS" length="12"/>
+        <viewAttribute datatype="NVARCHAR" id="PARTNER" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="CUSTOMER_NAME" length="80"/>
+        <viewAttribute datatype="NVARCHAR" id="STATE" length="3"/>
+        <viewAttribute datatype="NVARCHAR" id="CLASSIFICATION" length="50"/>
+        <viewAttribute datatype="NVARCHAR" id="FROM_ADDRESS" length="241"/>
+        <viewAttribute datatype="NVARCHAR" id="TO_ADDRESS" length="241"/>
+        <viewAttribute datatype="VARCHAR" id="DISTRIBUTION_CHANNEL" length="64"/>
+        <viewAttribute datatype="VARCHAR" id="SUB_GROUP" length="64"/>
+        <viewAttribute datatype="NVARCHAR" id="WORKITEM_ID" length="10"/>
+        <viewAttribute datatype="INTEGER" id="NUMBER_OF_EMAILS"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> /* &#xD;
+&quot;_SYS_BIC&quot;.&quot;public.dd_reporting::EMAIL_ITEMS&quot; &#xD;
+TABLES USED:&#xD;
+ SWWWIHEAD - Work Item Header table for WI information &#xD;
+ CRMD_AUI_WI_IDX - WI Index table for Customer Partner Number assigned to email &#xD;
+ CRMD_ERMS_HEADER - ERMS WI table for assigned org unit and sender/recipient public.dd_reporting/&#xD;
+ CUSTOMER - customer details for reporting Reads Work Item type emails,with details about assigned customer and responsible org unit &#xD;
+&#xD;
+UPDATE LOG: 2020-03-26 | JWAECHTE | Initial creation&#xD;
+            2020-05-01 | BRETMITC | formatting, HRP1000 added for org responsible name, labels on output for UI&#xD;
+ */ &#xD;
+/********* Begin Procedure Script ************/ &#xD;
+BEGIN &#xD;
+  &#xD;
+ email = select&#xD;
+		  wi_1.wi_id,&#xD;
+		  wi_1.wi_text,&#xD;
+		  wi_1.wi_stat,&#xD;
+		  wi_1.wi_cd,&#xD;
+		  wi_1.wi_ct,		  &#xD;
+		  idx.account,&#xD;
+		  header.ext_addr,&#xD;
+		  header.int_addr,&#xD;
+		  header.org_unit,&#xD;
+		  org_name.stext,&#xD;
+		  idx.crea_tmp,		  &#xD;
+		  idx.zdis_channel &#xD;
+		 from &quot;SAPHANADB&quot;.&quot;SWWWIHEAD&quot; as wi_1 &#xD;
+		 inner join &quot;SAPHANADB&quot;.&quot;CRMD_AUI_WI_IDX&quot; as idx on wi_1.wi_id = idx.wi_id &#xD;
+		 inner join &quot;SAPHANADB&quot;.&quot;SWWWIHEAD&quot; as wi_2 on wi_1.parent_wi = wi_2.parent_wi &#xD;
+		 inner join &quot;SAPHANADB&quot;.&quot;CRMD_ERMS_HEADER&quot; as header on wi_2.wi_id = header.workitem_id &#xD;
+		 inner join &quot;SAPHANADB&quot;.&quot;HRP1000&quot; as org_name on org_name.objid = substring(header.org_unit,3) &#xD;
+		 where wi_1.wi_type = 'W' &#xD;
+		 and wi_2.wi_type = 'B' &#xD;
+		 and org_name.begda &lt;= current_date &#xD;
+		 and org_name.endda >= current_date;&#xD;
+
+ customer = select * &#xD;
+            from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/CUSTOMER&quot;;
+&#xD;
+ join_customer = select	 * &#xD;
+ 				 from :email &#xD;
+				 left outer join :customer &#xD;
+				 on :email.account = :customer.partner;
+&#xD;
+ var_out = select 			&#xD;
+ 			 org_unit as responsible_team,&#xD;
+ 			 stext as responsible_team_name,&#xD;
+             --wi_cd as created_date,&#xD;
+			 cast ( crea_tmp as date ) as created_date,&#xD;
+    		 concat( substring( wi_ct, 0,2 ), concat( ':', concat( substring( wi_ct,3,1 ) , '0') ) ) as created_time,&#xD;
+	     	 --cast ( concat(substring(wi_ct,0,3),'0') as varchar(20) ) as created_time,			 &#xD;
+			 --cast( utctolocal (substr(crea_tmp,0,14), 'ausvic') as varchar(8) ) as created_time,&#xD;
+  			 cast ( concat(substring(wi_ct,0,2),'00') as varchar(20) ) as created_hour,&#xD;
+ 			 cast ( concat( year (to_date(wi_cd,'yyyymmdd')), week (to_date(wi_cd,'yyyymmdd')) ) as nvarchar(6) ) as created_week,&#xD;
+			 cast ( year (to_date(wi_cd, 'yyyymmdd')) as nvarchar(4) ) as created_year,&#xD;
+			 wi_text as description,&#xD;
+			 wi_stat as status,			 &#xD;
+ 			 account as partner,&#xD;
+			 concat( name_org1, name_org2 ) as customer_name,&#xD;
+			 region as state,&#xD;
+			 classification,&#xD;
+			 ext_addr as from_address,&#xD;
+			 int_addr as to_address,&#xD;
+			 zdis_channel as distribution_channel,&#xD;
+			 description as sub_group,&#xD;
+			 wi_id as workitem_id,&#xD;
+			 count(*) as number_of_emails&#xD;
+			from :join_customer &#xD;
+			group by wi_id,&#xD;
+				 wi_text,&#xD;
+				 wi_stat,&#xD;
+				 wi_cd,&#xD;
+				 wi_ct,&#xD;
+				 account,&#xD;
+				 name_org1,&#xD;
+				 name_org2,&#xD;
+				 region,&#xD;
+				 classification,&#xD;
+				 ext_addr,&#xD;
+				 int_addr,&#xD;
+				 org_unit,&#xD;
+				 stext,&#xD;
+				 zdis_channel,&#xD;
+				 description,&#xD;
+				 crea_tmp&#xD;
+			  order by wi_ct, wi_cd;&#xD;
+ 
+ &#xD;
+END /********* &#xD;
+End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="RESPONSIBLE_TEAM" hidden="true" order="1">
+        <descriptions defaultDescription="Responsible Team"/>
+        <keyMapping columnObjectName="Script_View" columnName="RESPONSIBLE_TEAM"/>
+      </attribute>
+      <attribute id="RESPONSIBLE_TEAM_NAME" order="2">
+        <descriptions defaultDescription="Responsible Team Name"/>
+        <keyMapping columnObjectName="Script_View" columnName="RESPONSIBLE_TEAM_NAME"/>
+      </attribute>
+      <attribute id="CREATED_DATE" order="3">
+        <descriptions defaultDescription="Date Received"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_DATE"/>
+      </attribute>
+      <attribute id="CREATED_TIME" order="4">
+        <descriptions defaultDescription="Time Received"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_TIME"/>
+      </attribute>
+      <attribute id="CREATED_HOUR" hidden="true" order="5">
+        <descriptions defaultDescription="Hour Received"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_HOUR"/>
+      </attribute>
+      <attribute id="CREATED_WEEK" hidden="true" order="6">
+        <descriptions defaultDescription="Week Receieved"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_WEEK"/>
+      </attribute>
+      <attribute id="CREATED_YEAR" hidden="true" order="7">
+        <descriptions defaultDescription="Year Receieved"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_YEAR"/>
+      </attribute>
+      <attribute id="DESCRIPTION" order="8">
+        <descriptions defaultDescription="Description"/>
+        <keyMapping columnObjectName="Script_View" columnName="DESCRIPTION"/>
+      </attribute>
+      <attribute id="STATUS" order="9">
+        <descriptions defaultDescription="Status"/>
+        <keyMapping columnObjectName="Script_View" columnName="STATUS"/>
+      </attribute>
+      <attribute id="PARTNER" order="10">
+        <descriptions defaultDescription="Account BP Number"/>
+        <keyMapping columnObjectName="Script_View" columnName="PARTNER"/>
+      </attribute>
+      <attribute id="CUSTOMER_NAME" order="11">
+        <descriptions defaultDescription="Customer Name"/>
+        <keyMapping columnObjectName="Script_View" columnName="CUSTOMER_NAME"/>
+      </attribute>
+      <attribute id="STATE" order="12">
+        <descriptions defaultDescription="State"/>
+        <keyMapping columnObjectName="Script_View" columnName="STATE"/>
+      </attribute>
+      <attribute id="CLASSIFICATION" order="13">
+        <descriptions defaultDescription="Classification"/>
+        <keyMapping columnObjectName="Script_View" columnName="CLASSIFICATION"/>
+      </attribute>
+      <attribute id="FROM_ADDRESS" order="14">
+        <descriptions defaultDescription="Sender"/>
+        <keyMapping columnObjectName="Script_View" columnName="FROM_ADDRESS"/>
+      </attribute>
+      <attribute id="TO_ADDRESS" order="15">
+        <descriptions defaultDescription="Recipient"/>
+        <keyMapping columnObjectName="Script_View" columnName="TO_ADDRESS"/>
+      </attribute>
+      <attribute id="DISTRIBUTION_CHANNEL" order="16">
+        <descriptions defaultDescription="Distribution Channel"/>
+        <keyMapping columnObjectName="Script_View" columnName="DISTRIBUTION_CHANNEL"/>
+      </attribute>
+      <attribute id="SUB_GROUP" order="17">
+        <descriptions defaultDescription="Sub Group"/>
+        <keyMapping columnObjectName="Script_View" columnName="SUB_GROUP"/>
+      </attribute>
+      <attribute id="WORKITEM_ID" order="18">
+        <descriptions defaultDescription="Workitem ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="WORKITEM_ID"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="NUMBER_OF_EMAILS" order="19" aggregationType="count" measureType="simple">
+        <descriptions defaultDescription="Number of Emails"/>
+        <measureMapping columnObjectName="Script_View" columnName="NUMBER_OF_EMAILS"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CATEGORY_COMPLIANCE" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="CV_SCRIPT_TEST"/>
+  <metadata changedAt="2020-05-20 10:47:23.59"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="NVARCHAR" id="PRECEDING_GUID" length="32"/>
+        <viewAttribute datatype="VARCHAR" id="PRECEDING_OBJECT_ID" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="TRAILING_OBJECT_ID" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="PRECEDING_PROC_TP" length="4"/>
+        <viewAttribute datatype="VARCHAR" id="TRAILING_PROC_TP" length="4"/>
+        <viewAttribute datatype="VARCHAR" id="PRECEDING_CAT_1" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="PRECEDING_CAT_2" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="PRECEDING_CAT_3" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="TRAILING_CAT_1" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="TRAILING_CAT_2" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="TRAILING_CAT_3" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="PRECEDING_ROOT_CAUSE" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="PRECEDING_OUTCOME" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="PRECEDING_OUTCOME_REASON" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="TRAILING_ROOT_CAUSE" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="TRAILING_OUTCOME" length="50"/>
+        <viewAttribute datatype="VARCHAR" id="TRAILING_OUTCOME_REASON" length="50"/>
+        <viewAttribute datatype="INTEGER" id="MISCATEGORISED"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> 
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+ 	 
+	docflow =  select * from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting.aht/AHT_DOCFLOW&quot;;
+ 	 
+	var_out = select cast( :docflow.preceding_guid as nvarchar ) as preceding_guid,
+					preceding_hierarchy.object_id as preceding_object_id,
+					trailing_hierarchy.object_id as trailing_object_id,
+					preceding_hierarchy.process_type as preceding_proc_tp,
+					trailing_hierarchy.process_type as trailing_proc_tp,
+					
+					preceding_hierarchy.cat_lvl_1 as preceding_cat_1,
+					preceding_hierarchy.cat_lvl_2 as preceding_cat_2,
+					preceding_hierarchy.cat_lvl_3 as preceding_cat_3,
+					trailing_hierarchy.cat_lvl_1 as trailing_cat_1,
+					trailing_hierarchy.cat_lvl_2 as trailing_cat_2,
+					trailing_hierarchy.cat_lvl_3 as trailing_cat_3,
+					
+					preceding_hierarchy.root_cause as preceding_root_cause,
+					preceding_hierarchy.outcome as preceding_outcome,
+					preceding_hierarchy.outcome_reason as preceding_outcome_reason,
+					trailing_hierarchy.root_cause as trailing_root_cause,
+					trailing_hierarchy.outcome as trailing_outcome,
+					trailing_hierarchy.outcome_reason as trailing_outcome_reason,	
+					
+					/*preceding_hierarchy.created_by as preceding_created_by,
+					trailing_hierarchy.created_by as trailing_created_by,
+					preceding_hierarchy.partner as preceding_partner,
+					trailing_hierarchy.partner as trailing_partner,
+					preceding_hierarchy.customer_name as preceding_cust_name,
+					trailing_hierarchy.customer_name as trailing_customer_name,*/
+					
+					count(:docflow.preceding_guid) as miscategorised
+					from &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/TRANSACTION_CATEGORY&quot; as preceding_hierarchy
+					left outer join :docflow on :docflow.preceding_guid = preceding_hierarchy.guid_hi
+					inner join &quot;_SYS_BIC&quot;.&quot;public.dd_reporting/TRANSACTION_CATEGORY&quot; as trailing_hierarchy on :docflow.next_guid = trailing_hierarchy.guid_hi
+					where preceding_hierarchy.process_type = 'ZSRV' or preceding_hierarchy.process_type = 'ZSRC' or preceding_hierarchy.process_type = 'ZSRF'
+					group by preceding_guid,
+					preceding_hierarchy.object_id,
+					trailing_hierarchy.object_id,
+					preceding_hierarchy.process_type,
+					trailing_hierarchy.process_type,
+					preceding_hierarchy.cat_lvl_1,
+					preceding_hierarchy.cat_lvl_2,
+					preceding_hierarchy.cat_lvl_3,
+					trailing_hierarchy.cat_lvl_1,
+					trailing_hierarchy.cat_lvl_2,
+					trailing_hierarchy.cat_lvl_3,
+					preceding_hierarchy.root_cause,
+					preceding_hierarchy.outcome,
+					preceding_hierarchy.outcome_reason,
+					trailing_hierarchy.root_cause,
+					trailing_hierarchy.outcome,
+					trailing_hierarchy.outcome_reason; 
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="PRECEDING_GUID" order="1">
+        <descriptions defaultDescription="Object ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_GUID"/>
+      </attribute>
+      <attribute id="PRECEDING_OBJECT_ID" order="2">
+        <descriptions defaultDescription="PRECEDING_OBJECT_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_OBJECT_ID"/>
+      </attribute>
+      <attribute id="TRAILING_OBJECT_ID" order="3">
+        <descriptions defaultDescription="TRAILING_OBJECT_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRAILING_OBJECT_ID"/>
+      </attribute>
+      <attribute id="PRECEDING_PROC_TP" order="4">
+        <descriptions defaultDescription="PRECEDING_PROC_TP"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_PROC_TP"/>
+      </attribute>
+      <attribute id="TRAILING_PROC_TP" order="5">
+        <descriptions defaultDescription="TRAILING_PROC_TP"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRAILING_PROC_TP"/>
+      </attribute>
+      <attribute id="PRECEDING_CAT_1" order="6">
+        <descriptions defaultDescription="PRECEDING_CAT_1"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_CAT_1"/>
+      </attribute>
+      <attribute id="PRECEDING_CAT_2" order="7">
+        <descriptions defaultDescription="PRECEDING_CAT_2"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_CAT_2"/>
+      </attribute>
+      <attribute id="PRECEDING_CAT_3" order="8">
+        <descriptions defaultDescription="PRECEDING_CAT_3"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_CAT_3"/>
+      </attribute>
+      <attribute id="TRAILING_CAT_1" order="9">
+        <descriptions defaultDescription="TRAILING_CAT_1"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRAILING_CAT_1"/>
+      </attribute>
+      <attribute id="TRAILING_CAT_2" order="10">
+        <descriptions defaultDescription="TRAILING_CAT_2"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRAILING_CAT_2"/>
+      </attribute>
+      <attribute id="TRAILING_CAT_3" order="11">
+        <descriptions defaultDescription="TRAILING_CAT_3"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRAILING_CAT_3"/>
+      </attribute>
+      <attribute id="PRECEDING_ROOT_CAUSE" order="12">
+        <descriptions defaultDescription="PRECEDING_ROOT_CAUSE"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_ROOT_CAUSE"/>
+      </attribute>
+      <attribute id="PRECEDING_OUTCOME" order="13">
+        <descriptions defaultDescription="PRECEDING_OUTCOME"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_OUTCOME"/>
+      </attribute>
+      <attribute id="PRECEDING_OUTCOME_REASON" order="14">
+        <descriptions defaultDescription="PRECEDING_OUTCOME_REASON"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_OUTCOME_REASON"/>
+      </attribute>
+      <attribute id="TRAILING_ROOT_CAUSE" order="15">
+        <descriptions defaultDescription="TRAILING_ROOT_CAUSE"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRAILING_ROOT_CAUSE"/>
+      </attribute>
+      <attribute id="TRAILING_OUTCOME" order="16">
+        <descriptions defaultDescription="TRAILING_OUTCOME"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRAILING_OUTCOME"/>
+      </attribute>
+      <attribute id="TRAILING_OUTCOME_REASON" order="17">
+        <descriptions defaultDescription="TRAILING_OUTCOME_REASON"/>
+        <keyMapping columnObjectName="Script_View" columnName="TRAILING_OUTCOME_REASON"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="MISCATEGORISED" order="18" aggregationType="count" measureType="simple">
+        <descriptions defaultDescription="Total Miscategorised"/>
+        <measureMapping columnObjectName="Script_View" columnName="MISCATEGORISED"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

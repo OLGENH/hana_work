@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dimension:dimension xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:AccessControl="http://www.sap.com/ndb/SQLCoreModelAccessControl.ecore" xmlns:Dimension="http://www.sap.com/ndb/BiModelDimension.ecore" schemaVersion="1.2" id="INTERACTION_CATEGORY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" dimensionType="Standard">
+  <origin/>
+  <descriptions defaultDescription="INTERACTION_CATEGORY"/>
+  <metadata changedAt="2020-03-22 12:00:44.736"/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <attributes>
+    <attribute id="OBJ_EXTKEY" key="true" order="1" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="OBJ_EXTKEY"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_OK" columnName="OBJ_EXTKEY"/>
+    </attribute>
+    <attribute id="VAL_FROM" order="2" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="VAL_FROM"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_AS" columnName="VAL_FROM"/>
+    </attribute>
+    <attribute id="VAL_TO" order="3" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="VAL_TO"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_AS" columnName="VAL_TO"/>
+    </attribute>
+    <attribute id="CAT_ID" order="4" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="CAT_ID"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_CA" columnName="CAT_ID"/>
+    </attribute>
+    <attribute id="ASP_ID" order="5" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ASP_ID"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_AS" columnName="ASP_ID"/>
+    </attribute>
+    <attribute id="ASP_GUID" order="6" attributeHierarchyActive="false" displayAttribute="false">
+      <descriptions defaultDescription="ASP_GUID"/>
+      <keyMapping schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_AS" columnName="ASP_GUID"/>
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <privateDataFoundation>
+    <tableProxies>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_OK"/>
+        <columnFilter columnName="OBJ_EXTKEY">
+          <valueFilter xsi:type="AccessControl:SingleValueFilter" operator="CP" including="true" value="A1ZACTRSN*"/>
+        </columnFilter>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_LN"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_CA"/>
+      </tableProxy>
+      <tableProxy>
+        <table schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_AS"/>
+      </tableProxy>
+    </tableProxies>
+    <joins>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_OK"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_LN"/>
+        <leftColumns>
+          <columnName>OBJ_GUID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>OBJ_GUID</columnName>
+        </rightColumns>
+        <properties cardinality="CN_N" joinOperator="Equal" joinType="inner"/>
+      </join>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_LN"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_CA"/>
+        <leftColumns>
+          <columnName>CAT_GUID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>CAT_GUID</columnName>
+        </rightColumns>
+        <properties cardinality="CN_N" joinOperator="Equal" joinType="inner"/>
+      </join>
+      <join>
+        <leftTable schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_CA"/>
+        <rightTable schemaName="SAPHANADB" columnObjectName="CRMC_ERMS_CAT_AS"/>
+        <leftColumns>
+          <columnName>ASP_GUID</columnName>
+        </leftColumns>
+        <rightColumns>
+          <columnName>ASP_GUID</columnName>
+        </rightColumns>
+        <properties cardinality="CN_N" joinOperator="Equal" joinType="inner"/>
+      </join>
+    </joins>
+    <layout>
+      <shapes>
+        <shape modelObjectName="CRMC_ERMS_CAT_OK" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="70" y="30"/>
+        </shape>
+        <shape modelObjectName="CRMC_ERMS_CAT_LN" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="371" y="30"/>
+        </shape>
+        <shape modelObjectName="CRMC_ERMS_CAT_CA" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="670" y="30"/>
+        </shape>
+        <shape modelObjectName="CRMC_ERMS_CAT_AS" modelObjectNameSpace="SAPHANADB" modelObjectType="catalog">
+          <upperLeftCorner x="969" y="30"/>
+        </shape>
+        <shape modelObjectName="DataFoundation" modelObjectNameSpace="DataFoundation" modelObjectType="repository">
+          <upperLeftCorner x="40" y="85"/>
+          <rectangleSize height="0" width="0"/>
+        </shape>
+      </shapes>
+    </layout>
+  </privateDataFoundation>
+  <hierarchies/>
+</Dimension:dimension>

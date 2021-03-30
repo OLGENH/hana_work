@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="CHECKLIST_ITEMS" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="CHECKLIST_ITEMS_SCRIPT"/>
+  <metadata changedAt="2020-05-19 09:37:58.741" createdAt="2020-05-19 09:37:58.602"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="VARBINARY" id="CHECKLIST_GUID" length="16"/>
+        <viewAttribute datatype="TIMESTAMP" id="STEP_CREATED_AT"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_CREATED_BY" length="15"/>
+        <viewAttribute datatype="VARBINARY" id="CASE_GUID" length="16"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_NUM_ID" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_GRP" length="32"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_ID" length="8"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_NO" length="10"/>
+        <viewAttribute datatype="INTEGER" id="STEP_SLA_DURATION"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_SLA_DURATION_UNIT" length="12"/>
+        <viewAttribute datatype="DATE" id="STEP_SLA_VALID_FROM"/>
+        <viewAttribute datatype="DATE" id="STEP_SLA_VALID_TO"/>
+        <viewAttribute datatype="VARCHAR" id="STEP_DESCRIPTION" length="40"/>
+        <viewAttribute datatype="INTEGER" id="COUNTER"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> /********* 
+Begin Procedure Script ************/ 
+
+
+ /*
+	TABLES USED:
+    &quot;SAPHANADB&quot;.crmd_chklstaz        - checklist step id, no ect
+	&quot;SAPHANADB&quot;.zcfg_t_cklst_sla     - custom LDD step KPIs
+	&quot;SAPHANADB&quot;.crmc_chklst_st_t     - checklist step description literals
+	
+	This view combines existing order item details with checklist specific KPI details
+	
+	UPDATE LOG:
+    15/5/20 | BRETMITC | initial build
+ */
+begin 
+
+	 var_out = select
+	   items.guid as checklist_guid,
+	   to_timestamp(created_at) as step_created_at,
+	   created_by as step_created_by,
+	   header as case_guid,
+	   number_int as step_num_id,
+	   azcstep_grp as step_grp,
+	   azcstep_id as step_id,
+	   azcstep_no as step_no,
+	   case duration_unit when 'MINUTE' 
+		 then duration * 60 when 'HOUR' 
+		 then duration * 60 * 60 
+	   end as step_sla_duration,
+	   duration_unit as step_sla_duration_unit,
+	   valid_from as step_sla_valid_from,
+	   valid_to as step_sla_valid_to,
+	   chk_descr.description as step_description,
+	   count(items.guid) as counter
+	 from &quot;SAPHANADB&quot;.crmd_chklstaz as chk 
+	 inner join &quot;SAPHANADB&quot;.crmd_orderadm_i as items on items.guid = chk.guid 
+	 inner join &quot;SAPHANADB&quot;.crmc_chklst_st_t as chk_descr on chk_descr.step_id = chk.azcstep_id  and chk_descr.client = items.client
+	 left outer join &quot;SAPHANADB&quot;.zcfg_t_cklst_sla as z_sla on z_sla.step_id = chk.azcstep_id 
+	 where language = 'E' 
+	 group by 
+	   items.guid,
+	   created_at,
+	   created_by,
+	   header,
+	   number_int,
+	   azcstep_grp,
+	   azcstep_id,
+	   azcstep_no,
+	   duration,
+	   duration_unit,
+	   valid_from,
+	   valid_to,
+	   chk_descr.description;
+ 
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="CHECKLIST_GUID" order="1">
+        <descriptions defaultDescription="Checklist Guid"/>
+        <keyMapping columnObjectName="Script_View" columnName="CHECKLIST_GUID"/>
+      </attribute>
+      <attribute id="STEP_CREATED_AT" order="2">
+        <descriptions defaultDescription="Created At"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_CREATED_AT"/>
+      </attribute>
+      <attribute id="STEP_CREATED_BY" order="3">
+        <descriptions defaultDescription="Step Created By"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_CREATED_BY"/>
+      </attribute>
+      <attribute id="CASE_GUID" order="4">
+        <descriptions defaultDescription="Case Guid"/>
+        <keyMapping columnObjectName="Script_View" columnName="CASE_GUID"/>
+      </attribute>
+      <attribute id="STEP_NUM_ID" order="5">
+        <descriptions defaultDescription="Step Number ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_NUM_ID"/>
+      </attribute>
+      <attribute id="STEP_GRP" order="6">
+        <descriptions defaultDescription="Step Group"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_GRP"/>
+      </attribute>
+      <attribute id="STEP_ID" order="7">
+        <descriptions defaultDescription="Step ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_ID"/>
+      </attribute>
+      <attribute id="STEP_NO" order="8">
+        <descriptions defaultDescription="Step No"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_NO"/>
+      </attribute>
+      <attribute id="STEP_SLA_DURATION" order="9">
+        <descriptions defaultDescription="Step Duration"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_SLA_DURATION"/>
+      </attribute>
+      <attribute id="STEP_SLA_DURATION_UNIT" order="10">
+        <descriptions defaultDescription="Step Duration Unit"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_SLA_DURATION_UNIT"/>
+      </attribute>
+      <attribute id="STEP_SLA_VALID_FROM" order="11">
+        <descriptions defaultDescription="Step KPI Valid From"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_SLA_VALID_FROM"/>
+      </attribute>
+      <attribute id="STEP_SLA_VALID_TO" order="12">
+        <descriptions defaultDescription="Step KPI Valid To"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_SLA_VALID_TO"/>
+      </attribute>
+      <attribute id="STEP_DESCRIPTION" order="13">
+        <descriptions defaultDescription="Step Description"/>
+        <keyMapping columnObjectName="Script_View" columnName="STEP_DESCRIPTION"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="COUNTER" order="14" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="Count"/>
+        <measureMapping columnObjectName="Script_View" columnName="COUNTER"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

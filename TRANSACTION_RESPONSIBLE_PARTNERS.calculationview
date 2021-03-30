@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="TRANSACTION_RESPONSIBLE_PARTNERS" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="SCRIPT_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" scriptParametersCaseSensitive="true">
+  <origin/>
+  <descriptions defaultDescription="TRANSACTION_RESPONSIBLE_PARTNERS"/>
+  <metadata changedAt="2020-05-15 09:49:25.357"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="VARBINARY" id="GUID" length="16"/>
+        <viewAttribute datatype="NVARCHAR" id="CREATED_BY" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="CREATED_BY_EMP_ID" length="10"/>
+        <viewAttribute datatype="NVARCHAR" id="CREATED_BY_EMP_NAME" length="81"/>
+        <viewAttribute datatype="VARCHAR" id="RESPONSIBLE_GROUP_PARTNER" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="RESPONSIBLE_GROUP_NAME" length="81"/>
+        <viewAttribute datatype="VARCHAR" id="RESPONSIBLE_USER_PARTNER" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="RESPONSIBLE_USER_NAME" length="81"/>
+        <viewAttribute datatype="INTEGER" id="NUMBER_OF_TRANSACTIONS"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> 
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+ 
+ 	trans = select guid, created_by, process_type from &quot;SAPHANADB&quot;.&quot;CRMD_ORDERADM_H&quot;;
+ 	
+ 	trans_join_org = select :trans.guid, :trans.created_by,
+ 						idx.partner_no as responsible_group_partner
+ 						from :trans
+ 						inner join &quot;SAPHANADB&quot;.&quot;CRMD_ORDER_INDEX&quot; as idx
+ 						on idx.header = :trans.guid 						
+ 						where ( ( :trans.process_type = 'ZSRV' and idx.pft_1 = 'X' )   --Sold-To party for main partner on Service Requests
+							    or ( :trans.process_type = 'ZSRC' and idx.pft_1 = 'X' )   --Sold-To party for main partner on Complaints
+							    or ( :trans.process_type = 'ZSRF' and idx.pft_1 = 'X' )   --Sold-To party for main partner on Fridges
+							    or ( :trans.process_type = 'ZINT' and idx.pft_6 = 'X' ) ); --Main-partner for interaction record;
+
+	responsible_users = select guid, partner_no as responsible_user_partner from &quot;SAPHANADB&quot;.&quot;CRMD_ORDER_INDEX&quot; where pft_8 = 'X';
+	
+	trans_join_users = select :trans_join_org.guid, :trans_join_org.created_by,
+							  :trans_join_org.responsible_group_partner, :responsible_users.responsible_user_partner
+					   from :trans_join_org left outer join :responsible_users on :trans_join_org.guid = :responsible_users.guid;
+		 	
+	employees = select employee_bp.partner as created_by_emp_id, concat( employee_bp.name_first, concat( ' ', employee_bp.name_last ) ) as created_by_emp_name,
+						username.sobid as created_by_username
+						from &quot;SAPHANADB&quot;.&quot;HRP1001&quot; as CP
+						inner join &quot;SAPHANADB&quot;.&quot;BUT000&quot; as employee_bp on CP.sobid = employee_bp.partner and CP.sclas = 'BP'
+						inner join &quot;SAPHANADB&quot;.&quot;HRP1001&quot; as username on CP.objid = username.objid and username.sclas = 'US';
+						
+	aggr = select guid, created_by, created_by_emp_id, created_by_emp_name, responsible_group_partner, responsible_user_partner
+				from :trans_join_users
+ 				inner join :employees on :trans_join_users.created_by = :employees.created_by_username
+			 	group by guid, created_by, created_by_emp_id, created_by_emp_name, responsible_group_partner, responsible_user_partner;
+						
+						
+ 	var_out = select guid, created_by, created_by_emp_id, created_by_emp_name,
+ 					responsible_group_partner, concat( resp_group.name_org1, concat( ' ', resp_group.name_org2 )) as responsible_group_name,
+ 					responsible_user_partner, concat( resp_user.name_first, concat( ' ', resp_user.name_last )) as responsible_user_name,
+ 					count(guid) as number_of_transactions from :aggr
+ 					left outer join &quot;SAPHANADB&quot;.&quot;BUT000&quot; as resp_group on :aggr.responsible_group_partner = resp_group.partner
+ 					left outer join &quot;SAPHANADB&quot;.&quot;BUT000&quot; as resp_user on :aggr.responsible_user_partner = resp_user.partner
+			 	group by guid, created_by, created_by_emp_id, created_by_emp_name,
+			 	responsible_group_partner, resp_group.name_org1, resp_group.name_org2,
+			 	responsible_user_partner, resp_user.name_first, resp_user.name_last;
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="GUID" order="1">
+        <descriptions defaultDescription="GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="GUID"/>
+      </attribute>
+      <attribute id="CREATED_BY" order="2">
+        <descriptions defaultDescription="CREATED_BY"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_BY"/>
+      </attribute>
+      <attribute id="CREATED_BY_EMP_ID" order="3">
+        <descriptions defaultDescription="EMP_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_BY_EMP_ID"/>
+      </attribute>
+      <attribute id="CREATED_BY_EMP_NAME" order="4">
+        <descriptions defaultDescription="EMP_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="CREATED_BY_EMP_NAME"/>
+      </attribute>
+      <attribute id="RESPONSIBLE_GROUP_PARTNER" order="5">
+        <descriptions defaultDescription="RESPONSIBLE_GROUP_PARTNER"/>
+        <keyMapping columnObjectName="Script_View" columnName="RESPONSIBLE_GROUP_PARTNER"/>
+      </attribute>
+      <attribute id="RESPONSIBLE_GROUP_NAME" order="6">
+        <descriptions defaultDescription="RESPONSIBLE_GROUP_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="RESPONSIBLE_GROUP_NAME"/>
+      </attribute>
+      <attribute id="RESPONSIBLE_USER_PARTNER" order="7">
+        <descriptions defaultDescription="RESPONSIBLE_USER_PARTNER"/>
+        <keyMapping columnObjectName="Script_View" columnName="RESPONSIBLE_USER_PARTNER"/>
+      </attribute>
+      <attribute id="RESPONSIBLE_USER_NAME" order="8">
+        <descriptions defaultDescription="RESPONSIBLE_USER_NAME"/>
+        <keyMapping columnObjectName="Script_View" columnName="RESPONSIBLE_USER_NAME"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="NUMBER_OF_TRANSACTIONS" order="9" aggregationType="count" measureType="simple">
+        <descriptions defaultDescription="NUMBER_OF_TRANSACTIONS"/>
+        <measureMapping columnObjectName="Script_View" columnName="NUMBER_OF_TRANSACTIONS"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

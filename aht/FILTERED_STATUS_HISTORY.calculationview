@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="FILTERED_STATUS_HISTORY" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="crossClient" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" calculationScenarioType="TREE_BASED" dataCategory="DIMENSION" enforceSqlExecution="false" executionSemantic="UNDEFINED" outputViewType="Projection">
+  <origin/>
+  <descriptions defaultDescription="CV_ITEM_STATUS"/>
+  <metadata changedAt="2020-05-13 11:24:04.672" createdAt="2020-05-13 11:24:04.672"/>
+  <localVariables>
+    <variable id="IP_STAT" parameter="true">
+      <descriptions defaultDescription="IP_STAT"/>
+      <variableProperties datatype="VARCHAR" length="6" mandatory="false">
+        <valueDomain type="empty"/>
+        <selection multiLine="false" type="SingleValue"/>
+        <defaultRange/>
+      </variableProperties>
+    </variable>
+  </localVariables>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources>
+    <DataSource id="CRM_JCDS" type="DATA_BASE_TABLE">
+      <viewAttributes allViewAttributes="true"/>
+      <columnObject schemaName="SAPHANADB" columnObjectName="CRM_JCDS"/>
+    </DataSource>
+  </dataSources>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_1" filterExpressionLanguage="COLUMN_ENGINE">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="OBJNR"/>
+        <viewAttribute id="STAT"/>
+        <viewAttribute id="USNAM"/>
+        <viewAttribute id="UDATE"/>
+        <viewAttribute id="UTIME"/>
+        <viewAttribute id="CHIND"/>
+        <viewAttribute id="INACT"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input node="#CRM_JCDS">
+        <mapping xsi:type="Calculation:AttributeMapping" target="OBJNR" source="OBJNR"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STAT" source="STAT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="USNAM" source="USNAM"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="UDATE" source="UDATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="UTIME" source="UTIME"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CHIND" source="CHIND"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="INACT" source="INACT"/>
+      </input>
+      <filter>&quot;STAT&quot; ='$$IP_STAT$$'</filter>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Projection_1">
+    <descriptions/>
+    <attributes>
+      <attribute id="OBJNR" key="true" order="1" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="OBJNR"/>
+        <keyMapping columnObjectName="Projection_1" columnName="OBJNR"/>
+      </attribute>
+      <attribute id="STAT" order="2" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="STAT"/>
+        <keyMapping columnObjectName="Projection_1" columnName="STAT"/>
+      </attribute>
+      <attribute id="USNAM" order="3" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="USNAM"/>
+        <keyMapping columnObjectName="Projection_1" columnName="USNAM"/>
+      </attribute>
+      <attribute id="UDATE" order="4" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="UDATE"/>
+        <keyMapping columnObjectName="Projection_1" columnName="UDATE"/>
+      </attribute>
+      <attribute id="UTIME" order="5" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="UTIME"/>
+        <keyMapping columnObjectName="Projection_1" columnName="UTIME"/>
+      </attribute>
+      <attribute id="CHIND" order="6" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="CHIND"/>
+        <keyMapping columnObjectName="Projection_1" columnName="CHIND"/>
+      </attribute>
+      <attribute id="INACT" order="7" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="INACT"/>
+        <keyMapping columnObjectName="Projection_1" columnName="INACT"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures/>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="22" y="87"/>
+        <rectangleSize height="0" width="0"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Projection_1" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="22" y="165"/>
+        <rectangleSize height="104" width="140"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

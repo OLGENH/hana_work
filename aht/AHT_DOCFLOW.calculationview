@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" schemaVersion="2.3" id="AHT_DOCFLOW" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" calculationScenarioType="SCRIPT_BASED" dataCategory="DEFAULT" enforceSqlExecution="false" executionSemantic="UNDEFINED" propagateInstantiation="true" scriptParametersCaseSensitive="true">
+<origin/>
+  <descriptions defaultDescription="DOCFLOW"/>
+  <metadata changedAt="2020-05-13 11:12:35.706" createdAt="2020-05-13 11:12:35.706"/>
+  <localVariables/>
+  <variableMappings/>
+  <informationModelLayout relativeWidthScenario="27"/>
+  <dataSources/>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:SqlScriptView" id="Script_View">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute datatype="VARCHAR" id="PRECEDING_GUID" length="16"/>
+        <viewAttribute datatype="VARCHAR" id="PREV_ID" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="NEXT_GUID" length="16"/>
+        <viewAttribute datatype="VARCHAR" id="NEXT_ID" length="10"/>
+        <viewAttribute datatype="VARCHAR" id="REL_TYPE" length="10"/>
+        <viewAttribute datatype="INTEGER" id="PRECEDING_COUNT"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <definition> 
+ /********* Begin Procedure Script ************/ 
+ BEGIN 
+ 
+  /*
+	TABLES USED:
+    &quot;SAPHANADB&quot;.&quot;SRRELROLES&quot;  - docflow data
+	&quot;SAPHANADB&quot;.&quot;CRMD_BINREL&quot; - docflow data
+	
+	This view retrieves preceding/proceeding docflow links for a given guid.
+	
+	UPDATE LOG:
+    15/5/20 | BRETMITC | initial build
+ */
+ 
+ 	 var_out = select 
+       srel_prec.objkey as preceding_guid,
+       prev_order.object_id as prev_id,
+       srel_next.objkey as next_guid,   
+       next_order.object_id as next_id,   
+       binrel.breltyp as rel_type,
+       count(srel_prec.objkey) as preceding_count
+     from &quot;SAPHANADB&quot;.&quot;SRRELROLES&quot; as srel_prec
+     inner join &quot;SAPHANADB&quot;.&quot;SRRELROLES&quot; as srel_next on srel_prec.roleid = srel_prec.roleid
+     inner join &quot;SAPHANADB&quot;.&quot;CRMD_BINREL&quot; as binrel on srel_prec.roleid = binrel.role_a 
+     and srel_next.roleid = binrel.role_b
+     inner join &quot;SAPHANADB&quot;.&quot;CRMD_ORDERADM_H&quot; as prev_order on prev_order.guid = srel_prec.objkey 
+     inner join &quot;SAPHANADB&quot;.&quot;CRMD_ORDERADM_H&quot; as next_order on next_order.guid = srel_next.objkey
+	 where breltyp = 'VONA'
+	 group by 
+	   srel_prec.objkey, 
+	   prev_order.object_id,
+	   srel_next.objkey,
+	   next_order.object_id,
+	   binrel.breltyp ;
+
+END /********* End Procedure Script ************/</definition>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Script_View">
+    <descriptions/>
+    <attributes>
+      <attribute id="PRECEDING_GUID" order="1">
+        <descriptions defaultDescription="PRECEDING_GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="PRECEDING_GUID"/>
+      </attribute>
+      <attribute id="PREV_ID" order="2">
+        <descriptions defaultDescription="PREV_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="PREV_ID"/>
+      </attribute>
+      <attribute id="NEXT_GUID" order="3">
+        <descriptions defaultDescription="NEXT_GUID"/>
+        <keyMapping columnObjectName="Script_View" columnName="NEXT_GUID"/>
+      </attribute>
+      <attribute id="NEXT_ID" order="4">
+        <descriptions defaultDescription="NEXT_ID"/>
+        <keyMapping columnObjectName="Script_View" columnName="NEXT_ID"/>
+      </attribute>
+      <attribute id="REL_TYPE" order="5">
+        <descriptions defaultDescription="REL_TYPE"/>
+        <keyMapping columnObjectName="Script_View" columnName="REL_TYPE"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="PRECEDING_COUNT" order="6" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="PRECEDING_COUNT"/>
+        <measureMapping columnObjectName="Script_View" columnName="PRECEDING_COUNT"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="40" y="85"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>
